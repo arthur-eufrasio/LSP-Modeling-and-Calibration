@@ -5,7 +5,7 @@ import json
 os.chdir(os.getenv("BACKEND_PROJECT_PATH"))
 sys.dont_write_bytecode = True
 
-from ModelBuilder import ModelBuilder
+from backend.simulation import Simulation
 
 class Command:
     def __init__(self):
@@ -21,7 +21,7 @@ class Command:
         self.log("[Command] Starting execution...", self.log_file_path)
         
         self.create_paths()
-        self.run_model_builder()
+        self.run_simulation()
         
         self.log("[Command] End.", self.log_file_path)
 
@@ -37,10 +37,6 @@ class Command:
         self.config_dir_path = os.path.join(os.path.dirname(self.backend_project_path), "backend/model_config")
         self.data_dir_path = os.path.join(os.path.dirname(self.backend_project_path), "backend/data")
         
-        self.log("[Command] Paths created successfully.", self.log_file_path)
-        self.log("       - Config Path: " + self.config_dir_path, self.log_file_path)
-        self.log("       - Data Path: " + self.data_dir_path, self.log_file_path)
-
     def read_config_data(self):
         config_file_path = os.path.join(self.config_dir_path, "model_config.json")
         
@@ -49,14 +45,14 @@ class Command:
             
         return config_data
 
-    def run_model_builder(self):
-        self.log("[Command] Beginning extraction...", self.log_file_path)
+    def run_simulation(self):
+        self.log("    [Simulation] Starting simulation.", self.log_file_path)
         
         config_data = self.read_config_data()
-        model_builder = ModelBuilder(config_data, self.data_dir_path)
-        model_builder.run()
+        simulation = Simulation(config_data, self.data_dir_path)
+        simulation.run()
         
-        self.log("       [Extraction] The extraction was completed.", self.log_file_path)
+        self.log("    [Simulation] The simulation was completed.", self.log_file_path)
 
 if __name__ == "__main__":
     try:

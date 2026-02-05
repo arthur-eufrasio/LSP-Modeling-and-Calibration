@@ -16,7 +16,7 @@ from connectorBehavior import *
 from abaqus import *
 from abaqusConstants import *
 
-class ModelBuilder:
+class Simulation:
     def __init__(self, model_config, path_data_dir):
         self.fullConfig = model_config
         self.modelName = str(self.fullConfig.keys()[0])

@@ -24,18 +24,11 @@ class Simulation:
         self.pathDataDir = path_data_dir
         self.backendPath = os.path.dirname(self.pathDataDir)
         self.logFilePath = os.path.join(self.backendPath, "log", "abaqus_log.txt")
-        self._ensure_directories()
         
         Mdb()
         session.journalOptions.setValues(replayGeometry=INDEX, recoverGeometry=INDEX)
         self.model = mdb.Model(name=self.modelName)
         del mdb.models['Model-1']
-
-    def _ensure_directories(self):
-        if not os.path.exists(os.path.dirname(self.logFilePath)):
-            os.makedirs(os.path.dirname(self.logFilePath))
-        if not os.path.exists(self.pathDataDir):
-            os.makedirs(self.pathDataDir)
 
     def log(self, msg, log_file_path):
         log_dir = os.path.dirname(log_file_path)

@@ -40,6 +40,9 @@
                     "poissonRatio": 0.33
                 },
                 "density": 2.77e-09
+            },
+            "job": {
+                "numCPUs": 10
             }
         }
     }

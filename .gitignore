@@ -5,6 +5,7 @@ __pycache__/
 backend/data/data.json
 abaqus_acis.log
 backend/log/abaqus_log.txt
+backend/files/
 
 *.odb
 *.png

@@ -386,23 +386,21 @@ class Simulation:
         inp_path = os.path.join(files_path, 'inp')
         job_path = os.path.join(files_path, 'job')
 
+        if not os.path.exists(inp_path):
+            os.makedirs(inp_path)
+        if not os.path.exists(job_path):
+            os.makedirs(job_path)
+
         os.chdir(inp_path)
         mdb.jobs['JobMock'].writeInput()
-        self.log("[ModelBuilder] Input file for the job created successfully.", self.logFilePath)
+        self.log("[Simulation] Input file for the job created successfully.", self.logFilePath)
 
         inp_file_path = os.path.join(inp_path, 'JobMock.inp')
-    
-        with open(inp_file_path, 'r+') as f:
-            text = f.read()
-            novo_conteudo = text.replace("ACAX4", "CINAX4")
-
-            f.seek(0)
-            f.write(novo_conteudo)
-            f.truncate()
+        self._modify_element_type(inp_file_path, "ACAX4", "CINAX4")
 
         os.chdir(job_path)
         mdb.ModelFromInputFile(name=self.modelName + '_infinite', inputFileName= inp_file_path)
-        self.log("[ModelBuilder] Model created from input file successfully.", self.logFilePath)
+        self.log("[Simulation] Model created from input file successfully.", self.logFilePath)
 
         del mdb.jobs['JobMock']
 
@@ -414,3 +412,11 @@ class Simulation:
             resultsFormat=ODB, scratch='', type=ANALYSIS, userSubroutine='', waitHours=
             0, waitMinutes=0)
 
+    def _modify_element_type(self, file_path, old_element, new_element):
+        with open(file_path, 'r') as f:
+            content = f.read()
+        
+        new_content = content.replace(old_element, new_element)
+        
+        with open(file_path, 'w') as f:
+            f.write(new_content)

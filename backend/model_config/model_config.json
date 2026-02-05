@@ -10,7 +10,7 @@
             },
             "step": {
                 "durationShotPhase": 1000e-9,
-                "durationRestPhase": 1,
+                "durationRestPhase": 10000e-9,
                 "totalFrames": 200
             },
             "mesh": {

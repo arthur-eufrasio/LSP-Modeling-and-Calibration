@@ -57,10 +57,9 @@ class Simulation:
         self._create_mesh()
         self._create_boundary_conditions()
         self._create_job()
-        self.log("    [Simulation] Simulation finished successfully.", self.logFilePath)
 
     def _create_materials(self):
-        self.log("    [Simulation] Creating materials...", self.logFilePath)
+        self.log("      - Creating materials...", self.logFilePath)
         mat_params = self.modelBuilder['material']
         jc_params = mat_params['johnsonCook']
         elastic_params = mat_params['elastic']
@@ -92,7 +91,7 @@ class Simulation:
         self.materialElastic.Density(table=((mat_params['density'], ), ))
 
     def _create_parts(self):
-        self.log("    [Simulation] Creating parts...", self.logFilePath)
+        self.log("      - Creating parts...", self.logFilePath)
         geo_params = self.modelBuilder['geometry']
 
         lenght_finite_cube = geo_params['lenghtFiniteCube']
@@ -144,7 +143,7 @@ class Simulation:
         del infinite_cube_part
 
     def _create_sections(self):
-        self.log("    [Simulation] Creating sections...", self.logFilePath)
+        self.log("      - Creating sections...", self.logFilePath)
         self.workpiecePart = self.model.parts['workpiece']
         geo_params = self.modelBuilder['geometry']
         
@@ -170,7 +169,7 @@ class Simulation:
                                          thicknessAssignment=FROM_SECTION)
 
     def _create_steps(self):
-        self.log("    [Simulation] Creating steps...", self.logFilePath)
+        self.log("      - Creating steps...", self.logFilePath)
         step_params = self.modelBuilder['step']
         
         self.model.ExplicitDynamicsStep(
@@ -186,7 +185,7 @@ class Simulation:
         )
 
     def _create_partitions(self):
-        self.log("    [Simulation] Creating partitions...", self.logFilePath)
+        self.log("      - Creating partitions...", self.logFilePath)
         geo_params = self.modelBuilder['geometry']
         height_finite_cube = geo_params['heightFiniteCube']
         side_interest_region = geo_params['lenghtInterestRegion']
@@ -224,7 +223,7 @@ class Simulation:
             )
         
     def _create_loads(self):
-        self.log("    [Simulation] Creating loads...", self.logFilePath)
+        self.log("      - Creating loads...", self.logFilePath)
         pulse_params = self.modelBuilder['pulse']
         geo_params = self.modelBuilder['geometry']
         total_height = geo_params['heightFiniteCube'] + geo_params['infiniteBorder']
@@ -269,7 +268,7 @@ class Simulation:
         load.deactivate('RestPhase')
         
     def _create_mesh(self):
-        self.log("    [Simulation] Generating mesh...", self.logFilePath)
+        self.log("      - Generating mesh...", self.logFilePath)
         workpiece_edges = self.workpiecePart.edges
         workpiece_faces = self.workpiecePart.faces
         workpiece_part = self.workpiecePart
@@ -362,7 +361,7 @@ class Simulation:
         self.model.rootAssembly.regenerate()
 
     def _create_boundary_conditions(self):
-        self.log("    [Simulation] Creating boundary conditions...", self.logFilePath)
+        self.log("      - Creating boundary conditions...", self.logFilePath)
         root_assembly = self.model.rootAssembly
 
         root_assembly.Set(edges=
@@ -377,7 +376,7 @@ class Simulation:
             u1=SET, u2=UNSET, ur3=UNSET)
 
     def _create_job(self):
-        self.log("    [Simulation] Creating job and processing input file...", self.logFilePath)
+        self.log("      - Creating job and processing input file...", self.logFilePath)
         job_name = 'Job_{}'.format(self.modelName)
         step_params = self.modelBuilder['step']
         total_frames = step_params['totalFrames']
@@ -404,14 +403,14 @@ class Simulation:
 
         os.chdir(inp_path)
         mdb.jobs['JobMock'].writeInput()
-        self.log("    [Simulation] Input file for the job created successfully.", self.logFilePath)
+        self.log("      - Input file for the job created successfully.", self.logFilePath)
 
         inp_file_path = os.path.join(inp_path, 'JobMock.inp')
         self._modify_element_type(inp_file_path, "ACAX4", "CINAX4")
 
         os.chdir(job_path)
         mdb.ModelFromInputFile(name=self.modelName + '_infinite', inputFileName= inp_file_path)
-        self.log("    [Simulation] Model created from input file successfully.", self.logFilePath)
+        self.log("      - Model created from input file successfully.", self.logFilePath)
 
         del mdb.jobs['JobMock']
 
@@ -422,6 +421,12 @@ class Simulation:
             numCpus=num_cpus, numDomains=num_cpus, parallelizationMethodExplicit=DOMAIN, queue=None, 
             resultsFormat=ODB, scratch='', type=ANALYSIS, userSubroutine='', waitHours=
             0, waitMinutes=0)
+        
+        job.submit(consistencyChecking=OFF)
+        self.log("      - Job submitted successfully.", self.logFilePath)
+
+        job.waitForCompletion()
+        self.log("      - Job completed successfully.", self.logFilePath)
 
     def _modify_element_type(self, file_path, old_element, new_element):
         with open(file_path, 'r') as f:

@@ -5,7 +5,7 @@ import json
 os.chdir(os.getenv("BACKEND_PROJECT_PATH"))
 sys.dont_write_bytecode = True
 
-from backend.simulation import Simulation
+from simulation import Simulation
 
 class Command:
     def __init__(self):

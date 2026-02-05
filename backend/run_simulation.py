@@ -419,7 +419,7 @@ class Simulation:
             description='', echoPrint=OFF, explicitPrecision=SINGLE, historyPrint=OFF, 
             memory=90, memoryUnits=PERCENTAGE, model=self.modelName + '_infinite', modelPrint=OFF, 
             multiprocessingMode=DEFAULT, name=job_name, nodalOutputPrecision=SINGLE, 
-            numCpus=12, numDomains=12, parallelizationMethodExplicit=DOMAIN, queue=None, 
+            numCpus=num_cpus, numDomains=num_cpus, parallelizationMethodExplicit=DOMAIN, queue=None, 
             resultsFormat=ODB, scratch='', type=ANALYSIS, userSubroutine='', waitHours=
             0, waitMinutes=0)
 

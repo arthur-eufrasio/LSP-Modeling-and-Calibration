@@ -1,93 +1,73 @@
-# -*- coding: utf-8 -*-
 import sys
 import os
 import json
 
-os.chdir(os.getenv("BACKEND_PROJECT_PATH", None))
+os.chdir(os.getenv("BACKEND_PROJECT_PATH"))
 sys.dont_write_bytecode = True
 
 from ModelBuilder import ModelBuilder
 
-from abaqus import *
-from abaqusConstants import *
-from part import *
-from step import *
-from material import *
-from section import *
-from assembly import *
-from interaction import *
-from mesh import *
-from visualization import *
-from connectorBehavior import *
-
-
 class Command:
     def __init__(self):
-        self.backendProjectPath = os.getenv("BACKEND_PROJECT_PATH", None)
-        self.logFilePath = os.path.join(self.backendProjectPath, "log", "abaqus_log.txt")
+        self.backend_project_path = os.getenv("BACKEND_PROJECT_PATH")
+        self.log_file_path = os.path.join(self.backend_project_path, "log", "abaqus_log.txt")
+        self.config_dir_path = None
+        self.data_dir_path = None
+
+    def run(self):
+        if os.path.exists(self.log_file_path):
+            os.remove(self.log_file_path)
         
-        if os.path.exists(self.logFilePath):
-            os.remove(self.logFilePath)
-        self.log("[Command] Iniciando execução...\n", self.logFilePath)
-
+        self.log("[Command] Starting execution...", self.log_file_path)
+        
         self.create_paths()
-        self.start_extractor()
+        self.run_model_builder()
+        
+        self.log("[Command] End.", self.log_file_path)
 
-        self.log("[Command] End.", self.logFilePath)
+    def log(self, message, log_file_path):
+        log_directory = os.path.dirname(log_file_path)
+        if not os.path.exists(log_directory):
+            os.makedirs(log_directory)
 
-    def log(self, msg, log_file_path):
-        log_dir = os.path.dirname(log_file_path)
-        if not os.path.exists(log_dir):
-            os.makedirs(log_dir)
-        log_path = os.path.join(log_dir, "abaqus_log.txt")
-
-        with open(log_path, "a") as f:
-            f.write(msg + "\n")
-            f.flush()
+        with open(log_file_path, "a") as f:
+            f.write(message + "\n")
 
     def create_paths(self):
-        self.backend_project_path = os.getenv("BACKEND_PROJECT_PATH", None)
+        self.config_dir_path = os.path.join(os.path.dirname(self.backend_project_path), "backend/model_config")
+        self.data_dir_path = os.path.join(os.path.dirname(self.backend_project_path), "backend/data")
+        
+        self.log("[Command] Paths created successfully.", self.log_file_path)
+        self.log("       - Config Path: " + self.config_dir_path, self.log_file_path)
+        self.log("       - Data Path: " + self.data_dir_path, self.log_file_path)
 
-        self.path_dir_config = os.path.join(
-            os.path.dirname(self.backend_project_path), "backend/model_config"
-        )
-        self.path_data_dir = os.path.join(
-            os.path.dirname(self.backend_project_path), "backend/data"
-        )
+    def read_config_data(self):
+        config_file_path = os.path.join(self.config_dir_path, "model_config.json")
+        
+        with open(config_file_path, 'r') as file:
+            config_data = json.load(file)
+            
+        return config_data
 
-        self.log("[Command] The paths to the directories were successfully created.", self.logFilePath)
-        self.log("       - Extraction Directory Config Path: " + self.path_dir_config, self.logFilePath)
-        self.log("       - Extraction Directory Data Path: " + self.path_data_dir, self.logFilePath)
-
-    def read_data(self):
-        path_model_config = os.path.join(
-            self.path_dir_config, "model_config.json"
-        )
-
-        with open(path_model_config, 'r') as file:
-            model_config = json.load(file)
-
-        return model_config
-
-    def start_extractor(self):
-        self.log("[Command] Beggining extraction....", self.logFilePath)
-
-        model_config = self.read_data()
-        modelBuilder = ModelBuilder(model_config, self.path_data_dir)
-        modelBuilder.run()
-
-        self.log("       [Extraction] The extraction was completed.", self.logFilePath)
-
+    def run_model_builder(self):
+        self.log("[Command] Beginning extraction...", self.log_file_path)
+        
+        config_data = self.read_config_data()
+        model_builder = ModelBuilder(config_data, self.data_dir_path)
+        model_builder.run()
+        
+        self.log("       [Extraction] The extraction was completed.", self.log_file_path)
 
 if __name__ == "__main__":
     try:
-        model = Command()
+        command = Command()
+        command.run()
     except Exception as e:
         import traceback
 
-        backend_project_path = os.getenv("BACKEND_PROJECT_PATH", None)
+        backend_project_path = os.getenv("BACKEND_PROJECT_PATH")
         log_dir = os.path.join(backend_project_path, "log")
-        log_file_path = os.path.join(backend_project_path, "log", "abaqus_log.txt")
+        log_file_path = os.path.join(log_dir, "abaqus_log.txt")
 
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
@@ -97,4 +77,3 @@ if __name__ == "__main__":
             f.write("\n[COMMAND ERROR] An exception occurred during execution:\n")
             traceback.print_exc(file=f)
             f.write("\n====================================================\n")
-

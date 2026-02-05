@@ -1,0 +1,46 @@
+{
+    "lspModel01": {
+        "modelBuilder": {
+            "pulse": {
+                "p0": 2000.0,
+                "pMax": 3000.0,
+                "rMax": 1.3,
+                "r": 1.5,
+                "timeMax": 30e-9
+            },
+            "step": {
+                "durationShotPhase": 1000e-9,
+                "durationRestPhase": 1,
+                "totalFrames": 200
+            },
+            "mesh": {
+                "interestRegionSize": 0.08,
+                "maxElementSize": 0.2
+            },
+            "geometry": {
+                "lenghtFiniteCube": 7.0,
+                "heightFiniteCube": 7.0,
+                "infiniteBorder": 0.5,
+                "lenghtInterestRegion": 3.0,
+                "heightInterestRegion": 3.0
+            },
+            "material": {
+                "johnsonCook": {
+                    "a": 265,
+                    "b": 426,
+                    "n": 0.34,
+                    "m": 0,
+                    "meltingTemp": 0,
+                    "transitionTemp": 0,
+                    "c": 0.015,
+                    "epsilonDotZero": 1
+                },
+                "elastic": {
+                    "youngModulus": 71000.0,
+                    "poissonRatio": 0.33
+                },
+                "density": 2.77e-09
+            }
+        }
+    }
+}

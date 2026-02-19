@@ -370,7 +370,7 @@ class Simulation:
 
     def _create_job(self):
         self.log("      - Creating job and processing input file...", self.logFilePath)
-        job_name = 'Job_{}'.format(self.modelName)
+        job_name = self.modelName
         step_params = self.modelBuilder['step']
         total_frames = step_params['totalFrames']
         num_cpus = self.modelBuilder['job']['numCPUs']

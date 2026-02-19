@@ -1,5 +1,10 @@
 {
     "lspModel01": {
+        "odbExtractor": {
+            "stepName": "RestPhase",
+            "surfacePointPath": [[0.0, null, 0.0], [1.75, null, 0]],
+            "depthPointPath": [[0.0, null, 0.0], [0.0, -2.0, 0]]
+        },
         "modelBuilder": {
             "pulse": {
                 "p0": 2000.0,

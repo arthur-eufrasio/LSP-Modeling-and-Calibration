@@ -47,6 +47,7 @@ class OdbDataExtractor:
 
         depth_point_path = odb_config["depthPointPath"]
         depth_point_path[0][1] = height_model
+        depth_point_path[1][1] = depth_point_path[1][1] + height_model
 
         path_obj_name = "surface_path_{}".format(odb_name)
         path_points = tuple(tuple(p) for p in surface_point_path)

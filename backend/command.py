@@ -6,6 +6,7 @@ os.chdir(os.getenv("BACKEND_PROJECT_PATH"))
 sys.dont_write_bytecode = True
 
 from run_simulation import Simulation
+from run_extraction import OdbDataExtractor
 
 class Command:
     def __init__(self):
@@ -66,6 +67,15 @@ class Command:
         
         self.log("    [Simulation] The simulation was completed.", self.log_file_path)
 
+    def _run_extraction(self):
+        self.log("    [Extraction] Starting extraction.", self.log_file_path)
+        
+        config_data = self._read_model_config()
+        extraction = OdbDataExtractor(config_data, self.data_dir_path)
+        extraction.run()
+        
+        self.log("    [Extraction] The extraction was completed.", self.log_file_path)
+
     def run(self):
         self._create_directories()
         if os.path.exists(self.log_file_path):
@@ -74,7 +84,7 @@ class Command:
         self.log("[Command] Starting execution...", self.log_file_path)
         
         self._run_simulation()
-        
+        self._run_extraction()  
         self.log("[Command] End.", self.log_file_path)
 
 if __name__ == "__main__":

@@ -77,7 +77,7 @@ class OdbDataExtractor:
             variable=('S', INTEGRATION_POINT, ((COMPONENT, 'S11'),)),
             pathStyle=PATH_POINTS
         )
-        self.extractedData[odb_name]['surface'] = xy_data_obj.value
+        self.extractedData[odb_name]['surface'] = xy_data_obj.data
 
         xy_data_obj = session.XYDataFromPath(
             name="temp_xy_data",
@@ -90,7 +90,7 @@ class OdbDataExtractor:
             variable=('S', INTEGRATION_POINT, ((COMPONENT, 'S11'),)),
             pathStyle=PATH_POINTS
         )
-        self.extractedData[odb_name]['depth'] = xy_data_obj.value
+        self.extractedData[odb_name]['depth'] = xy_data_obj.data
         
     def save_to_json(self):
         self.log("      - Saving data to JSON...")

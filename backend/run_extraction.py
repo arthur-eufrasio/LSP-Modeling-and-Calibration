@@ -74,7 +74,7 @@ class OdbDataExtractor:
             includeIntersections=True,
             shape=UNDEFORMED,
             labelType=TRUE_DISTANCE,
-            variable=('S', INTEGRATION_POINT, ((COMPONENT, 'S'),)),
+            variable=('S', INTEGRATION_POINT, ((COMPONENT, 'S11'),)),
             pathStyle=PATH_POINTS
         )
         self.extractedData[odb_name]['surface'] = xy_data_obj.value
@@ -87,7 +87,7 @@ class OdbDataExtractor:
             includeIntersections=True,
             shape=UNDEFORMED,
             labelType=TRUE_DISTANCE,
-            variable=('S', INTEGRATION_POINT, ((COMPONENT, 'S'),)),
+            variable=('S', INTEGRATION_POINT, ((COMPONENT, 'S11'),)),
             pathStyle=PATH_POINTS
         )
         self.extractedData[odb_name]['depth'] = xy_data_obj.value

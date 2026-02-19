@@ -35,7 +35,7 @@ class OdbDataExtractor:
 
         odb_path = os.path.join(self.backendPath, "files", "job", "{}.odb".format(odb_name))
         self.odb = openOdb(path=odb_path)
-        session.viewports['Viewport: 1'].setValues(displayedObject=odb)
+        session.viewports['Viewport: 1'].setValues(displayedObject=self.odb)
 
         step_name = str(odb_config["stepName"])
         last_frame_index = len(self.odb.steps[step_name].frames) - 1

@@ -93,10 +93,10 @@ class OdbDataExtractor:
         self.extractedData[odb_name]['depth'] = xy_data_obj.data
         
     def save_to_json(self):
-        self.log("      - Saving data to JSON...")
+        self.log("      - Saving data to JSON...", self.logFilePath)
         output_path = os.path.join(self.pathDataDir, "data.json")
 
         with open(output_path, "w") as f:
             json.dump(self.extractedData, f, indent=4)
 
-        self.log("      - File saved: {}".format(output_path))
+        self.log("      - File saved: {}".format(output_path), self.logFilePath)

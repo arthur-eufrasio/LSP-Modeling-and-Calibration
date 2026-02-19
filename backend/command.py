@@ -18,7 +18,7 @@ class Command:
         self.files_inp_dir_path = None
         self.files_job_dir_path = None
 
-    def create_directories(self):
+    def _create_directories(self):
         self.backend_project_path = os.getenv("BACKEND_PROJECT_PATH")
         self.log_dir_path = os.path.join(self.backend_project_path, "log")
         self.log_file_path = os.path.join(self.log_dir_path, "abaqus_log.txt")
@@ -50,30 +50,30 @@ class Command:
         with open(log_file_path, "a") as f:
             f.write(message + "\n")
 
-    def read_model_config(self):
+    def _read_model_config(self):
         config_file_path = os.path.join(self.config_dir_path, "model_config.json")
         with open(config_file_path, 'r') as file:
             config_data = json.load(file)
             
         return config_data
 
-    def run_simulation(self):
+    def _run_simulation(self):
         self.log("    [Simulation] Starting simulation.", self.log_file_path)
         
-        config_data = self.read_model_config()
+        config_data = self._read_model_config()
         simulation = Simulation(config_data, self.data_dir_path)
         simulation.run()
         
         self.log("    [Simulation] The simulation was completed.", self.log_file_path)
 
     def run(self):
-        self.create_directories()
+        self._create_directories()
         if os.path.exists(self.log_file_path):
             os.remove(self.log_file_path)
         
         self.log("[Command] Starting execution...", self.log_file_path)
         
-        self.run_simulation()
+        self._run_simulation()
         
         self.log("[Command] End.", self.log_file_path)
 

@@ -9,12 +9,12 @@
                 "timeMax": 30e-9
             },
             "step": {
-                "durationShotPhase": 1000e-9,
-                "durationRestPhase": 1,
-                "totalFrames": 200
+                "durationShotPhase": 600e-9,
+                "durationRestPhase": 100000e-9,
+                "totalFrames": 20
             },
             "mesh": {
-                "interestRegionSize": 0.08,
+                "interestRegionSize": 0.005,
                 "maxElementSize": 0.2
             },
             "geometry": {

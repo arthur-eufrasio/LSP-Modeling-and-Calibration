@@ -8,6 +8,7 @@ backend/log/abaqus_log.txt
 backend/files/
 
 *.odb
+*.rec
 *.png
 *.lck
 *.txt

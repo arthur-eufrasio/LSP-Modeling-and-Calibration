@@ -16,7 +16,7 @@ from connectorBehavior import *
 from abaqus import *
 from abaqusConstants import *
 
-class ModelBuilder:
+class Simulation:
     def __init__(self, model_config, path_data_dir):
         self.fullConfig = model_config
         self.modelName = str(self.fullConfig.keys()[0])
@@ -24,18 +24,11 @@ class ModelBuilder:
         self.pathDataDir = path_data_dir
         self.backendPath = os.path.dirname(self.pathDataDir)
         self.logFilePath = os.path.join(self.backendPath, "log", "abaqus_log.txt")
-        self._ensure_directories()
         
         Mdb()
         session.journalOptions.setValues(replayGeometry=INDEX, recoverGeometry=INDEX)
         self.model = mdb.Model(name=self.modelName)
         del mdb.models['Model-1']
-
-    def _ensure_directories(self):
-        if not os.path.exists(os.path.dirname(self.logFilePath)):
-            os.makedirs(os.path.dirname(self.logFilePath))
-        if not os.path.exists(self.pathDataDir):
-            os.makedirs(self.pathDataDir)
 
     def log(self, msg, log_file_path):
         log_dir = os.path.dirname(log_file_path)
@@ -59,6 +52,7 @@ class ModelBuilder:
         self._create_job()
 
     def _create_materials(self):
+        self.log("      - Creating materials...", self.logFilePath)
         mat_params = self.modelBuilder['material']
         jc_params = mat_params['johnsonCook']
         elastic_params = mat_params['elastic']
@@ -90,6 +84,7 @@ class ModelBuilder:
         self.materialElastic.Density(table=((mat_params['density'], ), ))
 
     def _create_parts(self):
+        self.log("      - Creating parts...", self.logFilePath)
         geo_params = self.modelBuilder['geometry']
 
         lenght_finite_cube = geo_params['lenghtFiniteCube']
@@ -141,6 +136,7 @@ class ModelBuilder:
         del infinite_cube_part
 
     def _create_sections(self):
+        self.log("      - Creating sections...", self.logFilePath)
         self.workpiecePart = self.model.parts['workpiece']
         geo_params = self.modelBuilder['geometry']
         
@@ -166,6 +162,7 @@ class ModelBuilder:
                                          thicknessAssignment=FROM_SECTION)
 
     def _create_steps(self):
+        self.log("      - Creating steps...", self.logFilePath)
         step_params = self.modelBuilder['step']
         
         self.model.ExplicitDynamicsStep(
@@ -181,6 +178,7 @@ class ModelBuilder:
         )
 
     def _create_partitions(self):
+        self.log("      - Creating partitions...", self.logFilePath)
         geo_params = self.modelBuilder['geometry']
         height_finite_cube = geo_params['heightFiniteCube']
         side_interest_region = geo_params['lenghtInterestRegion']
@@ -218,6 +216,7 @@ class ModelBuilder:
             )
         
     def _create_loads(self):
+        self.log("      - Creating loads...", self.logFilePath)
         pulse_params = self.modelBuilder['pulse']
         geo_params = self.modelBuilder['geometry']
         total_height = geo_params['heightFiniteCube'] + geo_params['infiniteBorder']
@@ -262,6 +261,7 @@ class ModelBuilder:
         load.deactivate('RestPhase')
         
     def _create_mesh(self):
+        self.log("      - Generating mesh...", self.logFilePath)
         workpiece_edges = self.workpiecePart.edges
         workpiece_faces = self.workpiecePart.faces
         workpiece_part = self.workpiecePart
@@ -354,6 +354,7 @@ class ModelBuilder:
         self.model.rootAssembly.regenerate()
 
     def _create_boundary_conditions(self):
+        self.log("      - Creating boundary conditions...", self.logFilePath)
         root_assembly = self.model.rootAssembly
 
         root_assembly.Set(edges=
@@ -368,9 +369,11 @@ class ModelBuilder:
             u1=SET, u2=UNSET, ur3=UNSET)
 
     def _create_job(self):
-        job_name = 'Job_{}'.format(self.modelName)
+        self.log("      - Creating job and processing input file...", self.logFilePath)
+        job_name = self.modelName
         step_params = self.modelBuilder['step']
         total_frames = step_params['totalFrames']
+        num_cpus = self.modelBuilder['job']['numCPUs']
         
         self.model.fieldOutputRequests['F-Output-1'].setValues(
             variables=('S', 'U', 'PEEQ'), numIntervals=total_frames)
@@ -386,23 +389,21 @@ class ModelBuilder:
         inp_path = os.path.join(files_path, 'inp')
         job_path = os.path.join(files_path, 'job')
 
+        if not os.path.exists(inp_path):
+            os.makedirs(inp_path)
+        if not os.path.exists(job_path):
+            os.makedirs(job_path)
+
         os.chdir(inp_path)
         mdb.jobs['JobMock'].writeInput()
-        self.log("[ModelBuilder] Input file for the job created successfully.", self.logFilePath)
+        self.log("      - Input file for the job created successfully.", self.logFilePath)
 
         inp_file_path = os.path.join(inp_path, 'JobMock.inp')
-    
-        with open(inp_file_path, 'r+') as f:
-            text = f.read()
-            novo_conteudo = text.replace("ACAX4", "CINAX4")
-
-            f.seek(0)
-            f.write(novo_conteudo)
-            f.truncate()
+        self._modify_element_type(inp_file_path, "ACAX4", "CINAX4")
 
         os.chdir(job_path)
         mdb.ModelFromInputFile(name=self.modelName + '_infinite', inputFileName= inp_file_path)
-        self.log("[ModelBuilder] Model created from input file successfully.", self.logFilePath)
+        self.log("      - Model created from input file successfully.", self.logFilePath)
 
         del mdb.jobs['JobMock']
 
@@ -410,7 +411,21 @@ class ModelBuilder:
             description='', echoPrint=OFF, explicitPrecision=SINGLE, historyPrint=OFF, 
             memory=90, memoryUnits=PERCENTAGE, model=self.modelName + '_infinite', modelPrint=OFF, 
             multiprocessingMode=DEFAULT, name=job_name, nodalOutputPrecision=SINGLE, 
-            numCpus=12, numDomains=12, parallelizationMethodExplicit=DOMAIN, queue=None, 
+            numCpus=num_cpus, numDomains=num_cpus, parallelizationMethodExplicit=DOMAIN, queue=None, 
             resultsFormat=ODB, scratch='', type=ANALYSIS, userSubroutine='', waitHours=
             0, waitMinutes=0)
+        
+        job.submit(consistencyChecking=OFF)
+        self.log("      - Job submitted successfully.", self.logFilePath)
 
+        job.waitForCompletion()
+        self.log("      - Job completed successfully.", self.logFilePath)
+
+    def _modify_element_type(self, file_path, old_element, new_element):
+        with open(file_path, 'r') as f:
+            content = f.read()
+        
+        new_content = content.replace(old_element, new_element)
+        
+        with open(file_path, 'w') as f:
+            f.write(new_content)

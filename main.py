@@ -4,7 +4,6 @@ from utilities.clean_files import clean_files
 
 ABAQUS_CMD_PATH = r'C:\SIMULIA\Abaqus\Commands\abaqus.bat'
 
-
 def main():
     os.environ["BACKEND_PROJECT_PATH"] = os.path.join(os.getcwd(), "backend")
     

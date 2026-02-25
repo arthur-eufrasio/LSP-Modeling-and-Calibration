@@ -14,7 +14,7 @@ class PSOCalibrator:
     def __init__(self):
         self.abaqus_cmd_path = 'C:/SIMULIA/Abaqus/Commands/abaqus.bat'
         self.config_file_path = os.path.join('backend', 'model_config', 'model_config.json')
-        self.data_file_path = os.path.join('backend', 'data', 'data.json')
+        self.data_file_path = None
         self.target_profile_path = os.path.join('calibration', 'config', 'target_curve.pkl')
         self.calibration_config_path = os.path.join('calibration', 'config', 'calibration_config.json')
         
@@ -69,15 +69,18 @@ class PSOCalibrator:
         try:
             self._update_model_config(particle, particle_index, self.current_iteration)
             self._run_abaqus_simulation()
-            
+
+            data_file_name = f'data_i{self.current_iteration}_p{particle_index}.json'
+            self.data_file_path = os.path.join('backend', 'data', data_file_name)
             with open(self.data_file_path, 'r') as f:
                 data = json.load(f)
-                
-            depth_data = data["lspModel"]["depth"]
-            depth_x = np.array([point[0] for point in depth_data])
-            simulated_stresses = np.array([point[1] for point in depth_data])
             
-            target_stresses = self.target_spline(depth_x)
+            data_key_name = f"lspModel_i{self.current_iteration}_p{particle_index}"
+            surface_data = data[data_key_name]["surface"]
+            surface_data_x = np.array([point[0] for point in surface_data])
+            simulated_stresses = np.array([point[1] for point in surface_data])
+            
+            target_stresses = self.target_spline(surface_data_x)
             
             mse = np.mean((simulated_stresses - target_stresses)**2)
             return mse
@@ -119,7 +122,3 @@ class PSOCalibrator:
         print("\n=== Calibration Finished ===")
         print(f"Best Cost (MSE): {best_cost}")
         print(f"Best Parameters: {best_pos}")
-        
-        self._update_model_config(best_pos, particle_index=None, iteration_index=None)
-        self._run_abaqus_simulation()
-        print("Optimal model simulation saved to backend/data/data.json")

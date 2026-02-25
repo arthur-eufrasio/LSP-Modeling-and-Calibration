@@ -13,7 +13,7 @@ sys.dont_write_bytecode = True
 class PSOCalibrator:
     def __init__(self):
         # Paths configuration (relative to the root directory where the script is executed)
-        self.abaqus_cmd_path = r'C:\SIMULIA\Abaqus\Commands\abaqus.bat'
+        self.abaqus_cmd_path = 'C:/SIMULIA/Abaqus/Commands/abaqus.bat'
         self.config_file_path = os.path.join('backend', 'model_config', 'model_config.json')
         self.data_file_path = os.path.join('backend', 'data', 'data.json')
         self.target_profile_path = os.path.join('calibration', 'config', 'target_curve.pkl')
@@ -46,14 +46,17 @@ class PSOCalibrator:
         self.n_particles = config['n_particles']
         self.n_iterations = config['n_iterations']
 
-    def _update_model_config(self, particle):
+    def _update_model_config(self, particle, particle_index):
         """
         Updates the model_config.json file with the parameters from the current particle.
         Assuming particle indices correspond to Johnson-Cook parameters: [a, b, n]
         """
         with open(self.config_file_path, 'r') as file:
             config = json.load(file)
-            
+
+        if particle_index:
+            config['lspModel']['modelBuilder']['particleNumber'] = particle_index
+
         config['lspModel']['modelBuilder']['material']['johnsonCook']['a'] = float(particle[0])
         config['lspModel']['modelBuilder']['material']['johnsonCook']['b'] = float(particle[1])
         config['lspModel']['modelBuilder']['material']['johnsonCook']['n'] = float(particle[2])
@@ -71,12 +74,12 @@ class PSOCalibrator:
         )
         clean_files()
 
-    def _evaluate_particle(self, particle):
+    def _evaluate_particle(self, particle, particle_index):
         """
         Runs the simulation for a single particle and calculates the MSE against the target spline.
         """
         try:
-            self._update_model_config(particle)
+            self._update_model_config(particle, particle_index)
             self._run_abaqus_simulation()
             
             with open(self.data_file_path, 'r') as f:
@@ -106,7 +109,7 @@ class PSOCalibrator:
         
         for i in range(n_particles):
             print(f"--- Evaluating Particle {i + 1}/{n_particles} ---")
-            costs[i] = self._evaluate_particle(particles[i])
+            costs[i] = self._evaluate_particle(particles[i], i)
             print(f"Cost (MSE): {costs[i]:.4f}\n")
             
         return costs
@@ -131,6 +134,6 @@ class PSOCalibrator:
         print(f"Best Parameters: {best_pos}")
         
         # Run one final simulation using the best discovered parameters
-        self._update_model_config(best_pos)
+        self._update_model_config(best_pos, particle_index=None)
         self._run_abaqus_simulation()
         print("Optimal model simulation saved to backend/data/data.json")

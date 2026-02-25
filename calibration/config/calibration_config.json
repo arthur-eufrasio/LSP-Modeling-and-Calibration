@@ -10,5 +10,5 @@
     },
     "dimensions": 3,
     "n_particles": 5,
-    "n_iterations": 10
+    "n_iterations": 1
 }

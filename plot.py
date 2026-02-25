@@ -1,7 +1,7 @@
 import json
 import matplotlib.pyplot as plt
 
-file_path = 'backend/data/data.json'
+file_path = 'backend/data/stress_profile.json'
 
 with open(file_path, 'r') as file:
     data = json.load(file)

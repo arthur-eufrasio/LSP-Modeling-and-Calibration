@@ -6,8 +6,8 @@ file_path = 'backend/data/data.json'
 with open(file_path, 'r') as file:
     data = json.load(file)
 
-depth_data = data["lspModel01"]["depth"]
-surface_data = data["lspModel01"]["surface"]
+depth_data = data["lspModel"]["depth"]
+surface_data = data["lspModel"]["surface"]
 
 depth_x = [point[0] for point in depth_data]
 depth_y = [point[1] for point in depth_data]

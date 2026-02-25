@@ -1,21 +1,43 @@
 {
-    "lspModel01": {
+    "lspModel": {
         "odbExtractor": {
             "stepName": "RestPhase",
-            "surfacePointPath": [[0.0, null, 0.0], [4.0, null, 0]],
-            "depthPointPath": [[0.0, null, 0.0], [0.0, -2.0, 0]]
+            "surfacePointPath": [
+                [
+                    0.0,
+                    null,
+                    0.0
+                ],
+                [
+                    4.0,
+                    null,
+                    0
+                ]
+            ],
+            "depthPointPath": [
+                [
+                    0.0,
+                    null,
+                    0.0
+                ],
+                [
+                    0.0,
+                    -2.0,
+                    0
+                ]
+            ]
         },
         "modelBuilder": {
             "pulse": {
-                "p0": 2.5e3,
-                "pMax": 3.0e3,
+                "p0": 2500.0,
+                "pMax": 3000.0,
                 "rMax": 1.5,
                 "r": 1.75,
-                "timeMax": 30e-9
+                "timeMax": 3e-08
             },
             "step": {
-                "durationShotPhase": 300e-9,
-                "durationRestPhase": 1000e-9,
+                "durationShotPhase": 3e-07,
+                "durationRestPhase": 1e-05,
                 "totalFrames": 20
             },
             "mesh": {
@@ -23,17 +45,17 @@
                 "maxElementSize": 0.2
             },
             "geometry": {
-                "lenghtFiniteCube": 7.0,
-                "heightFiniteCube": 7.0,
+                "lenghtFiniteCube": 5.0,
+                "heightFiniteCube": 5.0,
                 "infiniteBorder": 0.5,
-                "lenghtInterestRegion": 4.0,
-                "heightInterestRegion": 4.0
+                "lenghtInterestRegion": 3.0,
+                "heightInterestRegion": 3.0
             },
             "material": {
                 "johnsonCook": {
-                    "a": 265,
-                    "b": 426,
-                    "n": 0.34,
+                    "a": 437.9395268815004,
+                    "b": 333.0101277020715,
+                    "n": 0.7362939640160157,
                     "m": 0,
                     "meltingTemp": 0,
                     "transitionTemp": 0,

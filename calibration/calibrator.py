@@ -4,7 +4,11 @@ import pickle
 import subprocess
 import numpy as np
 import pyswarms as ps
+import sys
 from utilities.clean_files import clean_files
+
+sys.dont_write_bytecode = True
+
 
 class PSOCalibrator:
     def __init__(self):
@@ -50,9 +54,9 @@ class PSOCalibrator:
         with open(self.config_file_path, 'r') as file:
             config = json.load(file)
             
-        config['lspModel01']['modelBuilder']['material']['johnsonCook']['a'] = float(particle[0])
-        config['lspModel01']['modelBuilder']['material']['johnsonCook']['b'] = float(particle[1])
-        config['lspModel01']['modelBuilder']['material']['johnsonCook']['n'] = float(particle[2])
+        config['lspModel']['modelBuilder']['material']['johnsonCook']['a'] = float(particle[0])
+        config['lspModel']['modelBuilder']['material']['johnsonCook']['b'] = float(particle[1])
+        config['lspModel']['modelBuilder']['material']['johnsonCook']['n'] = float(particle[2])
         
         with open(self.config_file_path, 'w') as file:
             json.dump(config, file, indent=4)
@@ -60,7 +64,7 @@ class PSOCalibrator:
     def _run_abaqus_simulation(self):
         """Executes the Abaqus simulation via the command file."""
         os.environ["BACKEND_PROJECT_PATH"] = os.path.join(os.getcwd(), "backend")
-        abaqus_command = f'"{self.abaqus_cmd_path}" cae startup="backend/command.py"'
+        abaqus_command = f'"{self.abaqus_cmd_path}" cae noGUI="backend/command.py"'
         
         subprocess.run(
             abaqus_command, shell=True, check=True, capture_output=True, text=True
@@ -78,7 +82,7 @@ class PSOCalibrator:
             with open(self.data_file_path, 'r') as f:
                 data = json.load(f)
                 
-            depth_data = data["lspModel01"]["depth"]
+            depth_data = data["lspModel"]["depth"]
             depth_x = np.array([point[0] for point in depth_data])
             simulated_stresses = np.array([point[1] for point in depth_data])
             

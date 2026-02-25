@@ -39,12 +39,15 @@ class PSOCalibrator:
         self.n_particles = config['n_particles']
         self.n_iterations = config['n_iterations']
 
-    def _update_model_config(self, particle, particle_index):
+    def _update_model_config(self, particle, particle_index, iteration_index):
         with open(self.config_file_path, 'r') as file:
             config = json.load(file)
 
-        if particle_index:
+        if particle_index is not None:
             config['lspModel']['modelBuilder']['particleNumber'] = particle_index
+        
+        if iteration_index is not None:
+            config['lspModel']['modelBuilder']['iterationNumber'] = iteration_index
 
         config['lspModel']['modelBuilder']['material']['johnsonCook']['a'] = float(particle[0])
         config['lspModel']['modelBuilder']['material']['johnsonCook']['b'] = float(particle[1])
@@ -64,7 +67,7 @@ class PSOCalibrator:
 
     def _evaluate_particle(self, particle, particle_index):
         try:
-            self._update_model_config(particle, particle_index)
+            self._update_model_config(particle, particle_index, self.current_iteration)
             self._run_abaqus_simulation()
             
             with open(self.data_file_path, 'r') as f:
@@ -87,11 +90,14 @@ class PSOCalibrator:
         n_particles = particles.shape[0]
         costs = np.zeros(n_particles)
         
+        print(f"\n=== Iteration {self.current_iteration + 1} ===")
         for i in range(n_particles):
             print(f"--- Evaluating Particle {i + 1}/{n_particles} ---")
             costs[i] = self._evaluate_particle(particles[i], i)
             print(f"Cost (MSE): {costs[i]:.4f}\n")
-            
+        
+        self.current_iteration += 1
+
         return costs
 
     def run(self):
@@ -102,7 +108,9 @@ class PSOCalibrator:
             options=self.options, 
             bounds=self.bounds
         )
-        
+
+        self.current_iteration = 0
+
         best_cost, best_pos = optimizer.optimize(
             self._objective_function, 
             iters=self.n_iterations
@@ -112,6 +120,6 @@ class PSOCalibrator:
         print(f"Best Cost (MSE): {best_cost}")
         print(f"Best Parameters: {best_pos}")
         
-        self._update_model_config(best_pos, particle_index=None)
+        self._update_model_config(best_pos, particle_index=None, iteration_index=None)
         self._run_abaqus_simulation()
         print("Optimal model simulation saved to backend/data/data.json")

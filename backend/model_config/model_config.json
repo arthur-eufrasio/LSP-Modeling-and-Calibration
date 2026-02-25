@@ -53,9 +53,9 @@
             },
             "material": {
                 "johnsonCook": {
-                    "a": 158.36402759890177,
-                    "b": 424.93419448301205,
-                    "n": 0.7997672420329818,
+                    "a": 165.14706278761037,
+                    "b": 215.21462698318678,
+                    "n": 0.13553757276483333,
                     "m": 0,
                     "meltingTemp": 0,
                     "transitionTemp": 0,
@@ -71,7 +71,8 @@
             "job": {
                 "numCPUs": 16
             },
-            "particleNumber": 4
+            "particleNumber": 2,
+            "iterationNumber": 0
         }
     }
 }

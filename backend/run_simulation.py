@@ -22,6 +22,7 @@ class Simulation:
         self.modelName = str(self.fullConfig.keys()[0])
         self.modelBuilder = self.fullConfig[self.modelName]['modelBuilder']
         self.particleNumber = self.modelBuilder['particleNumber']
+        self.iterationNumber = self.modelBuilder['iterationNumber']
         self.pathDataDir = path_data_dir
         self.backendPath = os.path.dirname(self.pathDataDir)
         self.logFilePath = os.path.join(self.backendPath, "log", "abaqus_log.txt")
@@ -371,7 +372,7 @@ class Simulation:
 
     def _create_job(self):
         self.log("      - Creating job and processing input file...", self.logFilePath)
-        job_name = self.modelName + '_p{}'.format(self.particleNumber)
+        job_name = self.modelName + '_i{}_p{}'.format(self.iterationNumber, self.particleNumber)
         step_params = self.modelBuilder['step']
         total_frames = step_params['totalFrames']
         num_cpus = self.modelBuilder['job']['numCPUs']
@@ -404,7 +405,7 @@ class Simulation:
         self._modify_element_type(inp_file_path, "ACAX4", "CINAX4")
 
         os.chdir(cae_path)
-        mdb.saveAs(self.modelName + '_p{}.cae'.format(self.particleNumber))
+        mdb.saveAs(self.modelName + '_i{}_p{}'.format(self.iterationNumber, self.particleNumber) + '.cae')
 
         os.chdir(job_path)
         mdb.ModelFromInputFile(name=self.modelName + '_infinite', inputFileName= inp_file_path)

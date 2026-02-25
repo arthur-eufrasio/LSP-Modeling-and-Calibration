@@ -12,26 +12,35 @@ class PSOCalibrator:
         self.abaqus_cmd_path = r'C:\SIMULIA\Abaqus\Commands\abaqus.bat'
         self.config_file_path = os.path.join('backend', 'model_config', 'model_config.json')
         self.data_file_path = os.path.join('backend', 'data', 'data.json')
-        self.target_profile_path = os.path.join('calibration', 'martin_senai_rs_profile.pkl')
+        self.target_profile_path = os.path.join('calibration', 'config', 'target_curve.pkl')
+        self.calibration_config_path = os.path.join('calibration', 'config', 'calibration_config.json')
         
         # Load the target calibration profile
         self.target_spline = self._load_target_profile()
         
-        # PSO Optimization Bounds (Example limits for Johnson-Cook: a, b, n)
-        self.bounds_min = np.array([100.0, 200.0, 0.1])
-        self.bounds_max = np.array([500.0, 800.0, 0.9])
-        self.bounds = (self.bounds_min, self.bounds_max)
-        
-        # PSO Hyperparameters
-        self.options = {'c1': 0.5, 'c2': 0.3, 'w': 0.9}
-        self.dimensions = 3
-        self.n_particles = 5
-        self.n_iterations = 10
+        # Load PSO parameters from the JSON configuration file
+        self._load_calibration_config()
 
     def _load_target_profile(self):
         """Loads the target cubic spline profile from the pickle file."""
         with open(self.target_profile_path, 'rb') as f:
             return pickle.load(f)
+
+    def _load_calibration_config(self):
+        """Loads the PSO configuration parameters from the JSON file."""
+        with open(self.calibration_config_path, 'r') as f:
+            config = json.load(f)
+
+        # Convert the lists from JSON into numpy arrays for PySwarms
+        self.bounds_min = np.array(config['pso_optimization_bounds']['bounds_min'])
+        self.bounds_max = np.array(config['pso_optimization_bounds']['bounds_max'])
+        self.bounds = (self.bounds_min, self.bounds_max)
+        
+        # Set PSO Hyperparameters
+        self.options = config['pso_hyperparameters']
+        self.dimensions = config['dimensions']
+        self.n_particles = config['n_particles']
+        self.n_iterations = config['n_iterations']
 
     def _update_model_config(self, particle):
         """

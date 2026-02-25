@@ -1,0 +1,14 @@
+{
+    "pso_optimization_bounds": {
+        "bounds_min": [100.0, 200.0, 0.1],
+        "bounds_max": [500.0, 800.0, 0.9]
+    },
+    "pso_hyperparameters": {
+        "c1": 0.5,
+        "c2": 0.3,
+        "w": 0.9
+    },
+    "dimensions": 3,
+    "n_particles": 5,
+    "n_iterations": 10
+}

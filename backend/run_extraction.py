@@ -10,6 +10,9 @@ class OdbDataExtractor:
         self.fullConfig = model_config
         self.odbName = str(self.fullConfig.keys()[0])
         self.modelBuilder = self.fullConfig[self.odbName]['modelBuilder']
+        self.particleNumber = self.modelBuilder['particleNumber']
+        self.iterationNumber = self.modelBuilder['iterationNumber']
+        self.odbName = self.odbName + "_i{}_p{}".format(self.iterationNumber, self.particleNumber)
         self.odbExtractor = self.fullConfig[self.odbName]['odbExtractor']
         self.extractedData = {}
         self.pathDataDir = path_data_dir
@@ -95,7 +98,7 @@ class OdbDataExtractor:
         
     def save_to_json(self):
         self.log("      - Saving data to JSON...", self.logFilePath)
-        output_path = os.path.join(self.pathDataDir, "data.json")
+        output_path = os.path.join(self.pathDataDir, "data_i{}_p{}.json".format(self.iterationNumber, self.particleNumber))
 
         with open(output_path, "w") as f:
             json.dump(self.extractedData, f, indent=4)

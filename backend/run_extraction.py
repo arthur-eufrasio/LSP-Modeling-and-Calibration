@@ -12,7 +12,6 @@ class OdbDataExtractor:
         self.modelBuilder = self.fullConfig[self.odbName]['modelBuilder']
         self.particleNumber = self.modelBuilder['particleNumber']
         self.iterationNumber = self.modelBuilder['iterationNumber']
-        self.odbName = self.odbName + "_i{}_p{}".format(self.iterationNumber, self.particleNumber)
         self.odbExtractor = self.fullConfig[self.odbName]['odbExtractor']
         self.extractedData = {}
         self.pathDataDir = path_data_dir
@@ -36,6 +35,7 @@ class OdbDataExtractor:
     def process_odb(self, odb_name, odb_config, model_config):
         self.log("      - Processing ODB: {}...".format(odb_name), self.logFilePath)
 
+        odb_name = odb_name + "_i{}_p{}".format(self.iterationNumber, self.particleNumber)
         odb_path = os.path.join(self.backendPath, "files", "job", "{}.odb".format(odb_name))
         self.odb = openOdb(path=odb_path)
         session.viewports['Viewport: 1'].setValues(displayedObject=self.odb)

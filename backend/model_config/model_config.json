@@ -36,16 +36,16 @@
                 "timeMax": 3e-08
             },
             "step": {
-                "durationShotPhase": 3e-07,
-                "durationRestPhase": 1e-05,
+                "durationShotPhase": 600e-9,
+                "durationRestPhase": 15000e-9,
                 "totalFrames": 20
             },
             "mesh": {
-                "interestRegionSize": 0.1,
+                "interestRegionSize": 0.05,
                 "maxElementSize": 0.2
             },
             "geometry": {
-                "lenghtFiniteCube": 5.0,
+                "lengthFiniteCube": 5.0,
                 "heightFiniteCube": 5.0,
                 "infiniteBorder": 0.5,
                 "lenghtInterestRegion": 3.0,

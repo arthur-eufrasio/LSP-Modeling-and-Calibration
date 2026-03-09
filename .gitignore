@@ -13,3 +13,4 @@ backend/files/
 *.lck
 *.txt
 *.rpy
+report.log

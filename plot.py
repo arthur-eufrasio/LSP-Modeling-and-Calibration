@@ -5,6 +5,7 @@ import pickle
 import re
 
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 import numpy as np
 
 
@@ -40,12 +41,16 @@ def main():
     data_files = sorted(glob.glob(DATA_GLOB))
 
     if not data_files:
-        raise FileNotFoundError(f"Nenhum arquivo encontrado em: {DATA_GLOB}")
+        raise FileNotFoundError(f"No files found in: {DATA_GLOB}")
 
-    profiles = []
+    iterations_data = {}
+    all_x = []
+    all_y = []
+    
     best_profile = None
     best_mse = float("inf")
 
+    # Load data and find the best profile overall
     for file_path in data_files:
         file_name = os.path.basename(file_path)
         iteration, particle = _extract_indices_from_name(file_name)
@@ -57,31 +62,69 @@ def main():
         y_target = target_spline(x)
         mse = float(np.mean((y - y_target) ** 2))
 
-        profile = {
-            "path": file_path,
-            "iteration": iteration,
+        profile_data = {
             "particle": particle,
+            "iteration": iteration,
             "x": x,
             "y": y,
             "mse": mse,
         }
-        profiles.append(profile)
 
+        if iteration not in iterations_data:
+            iterations_data[iteration] = []
+
+        iterations_data[iteration].append(profile_data)
+
+        # Track the absolute best particle
         if mse < best_mse:
             best_mse = mse
-            best_profile = profile
+            best_profile = profile_data
 
-    if not profiles or best_profile is None:
-        raise RuntimeError("Não foi possível carregar perfis válidos.")
+        all_x.extend(x)
+        all_y.extend(y)
 
-    fig, ax = plt.subplots(figsize=(11, 6))
+    if not iterations_data or best_profile is None:
+        raise RuntimeError("Could not load valid profiles.")
 
-    for profile in profiles:
-        ax.plot(profile["x"], profile["y"], color="gray", alpha=0.22, linewidth=1)
+    sorted_iterations = sorted(iterations_data.keys())
+    
+    # Visual offset: if files start at i=0, display them starting at 1
+    iter_offset = 1 if sorted_iterations[0] == 0 else 0
+    particle_offset = 1 
 
-    x_target_plot = np.linspace(np.min(best_profile["x"]), np.max(best_profile["x"]), 400)
+    # ==========================================
+    # COMMON FORMATTING FUNCTION
+    # ==========================================
+    x_min, x_max = min(all_x), max(all_x)
+    y_min, y_max = min(all_y), max(all_y)
+
+    x_target_plot = np.linspace(x_min, x_max, 400)
     y_target_plot = target_spline(x_target_plot)
-    ax.plot(
+    y_target_min, y_target_max = min(y_target_plot), max(y_target_plot)
+
+    # Add a buffer to the Y-axis so the curves don't touch the edges
+    y_min = min(y_min, y_target_min) - 50
+    y_max = max(y_max, y_target_max) + 50
+
+    def apply_common_formatting(fig, ax):
+        # Fix the layout padding so the title doesn't get cut
+        fig.subplots_adjust(top=0.88, bottom=0.12, left=0.1, right=0.95)
+        
+        ax.axhline(0, color="black", linewidth=0.8)
+        # Lock limits so both plots show the exact same window frame
+        ax.set_xlim(x_min, x_max)
+        ax.set_ylim(y_min, y_max)
+        ax.set_xlabel("Distance (mm)")
+        ax.set_ylabel("Residual Stress (MPa)")
+        ax.grid(True, linestyle=":", alpha=0.7)
+
+    # ==========================================
+    # PART 1: ANIMATION OF ALL ITERATIONS
+    # ==========================================
+    fig_anim, ax_anim = plt.subplots(figsize=(11, 6))
+    apply_common_formatting(fig_anim, ax_anim)
+
+    ax_anim.plot(
         x_target_plot,
         y_target_plot,
         color="black",
@@ -90,33 +133,85 @@ def main():
         label="Target (PKL)",
     )
 
-    ax.plot(
+    max_particles = max(len(particles) for particles in iterations_data.values())
+    particle_lines = []
+    for _ in range(max_particles):
+        line, = ax_anim.plot([], [], alpha=0.8, linewidth=1.5, marker='.', markersize=4)
+        particle_lines.append(line)
+
+    title_text = ax_anim.set_title("", fontsize=14, fontweight="bold", pad=15)
+    ax_anim.legend(loc="upper right")
+
+    def update(frame_idx):
+        iteration = sorted_iterations[frame_idx]
+        particles = iterations_data[iteration]
+
+        display_iter = iteration + iter_offset
+        title_text.set_text(f"Evolution of Residual Stress - Iteration: {display_iter}")
+
+        for i, line in enumerate(particle_lines):
+            if i < len(particles):
+                p_data = particles[i]
+                display_part = p_data['particle'] + particle_offset
+                line.set_data(p_data["x"], p_data["y"])
+                line.set_label(f"Particle {display_part} | MSE: {p_data['mse']:.2f}")
+            else:
+                line.set_data([], [])
+                line.set_label("_nolegend_")
+
+        ax_anim.legend(loc="upper right")
+        return particle_lines + [title_text]
+
+    print("Playing animation... Close the window to see the best profile result.")
+    ani = FuncAnimation(
+        fig_anim, 
+        update, 
+        frames=len(sorted_iterations), 
+        interval=1200, 
+        repeat=False,
+        blit=False
+    )
+    plt.show() 
+
+    # ==========================================
+    # PART 2: STATIC PLOT FOR THE BEST PROFILE
+    # ==========================================
+    best_display_iter = best_profile['iteration'] + iter_offset
+    best_display_part = best_profile['particle'] + particle_offset
+    
+    print(
+        f"\nShowing Best Particle:\n"
+        f"  Iteration: {best_display_iter} (Internal Index: {best_profile['iteration']})\n"
+        f"  Particle:  {best_display_part} (Internal Index: {best_profile['particle']})\n"
+        f"  MSE:       {best_profile['mse']:.6f}\n"
+    )
+
+    fig_best, ax_best = plt.subplots(figsize=(11, 6))
+    apply_common_formatting(fig_best, ax_best)
+
+    ax_best.plot(
+        x_target_plot,
+        y_target_plot,
+        color="black",
+        linewidth=2.5,
+        linestyle="--",
+        label="Target (PKL)",
+    )
+
+    ax_best.plot(
         best_profile["x"],
         best_profile["y"],
         color="red",
         linewidth=2.8,
         label=(
-            f"Melhor partícula: i={best_profile['iteration']} p={best_profile['particle']} "
-            f"| MSE={best_profile['mse']:.4f}"
+            f"Best Particle (i={best_display_iter}, p={best_display_part}) | "
+            f"MSE: {best_profile['mse']:.4f}"
         ),
     )
 
-    ax.axhline(0, color="black", linewidth=0.8)
-    ax.set_xlabel("Distância (mm)")
-    ax.set_ylabel("Tensão Residual (MPa)")
-    ax.set_title("Perfis de Tensão Residual (todas as partículas)")
-    ax.grid(True, linestyle=":", alpha=0.7)
-    ax.legend()
-    plt.tight_layout()
-
-    print(f"Total de perfis plotados: {len(profiles)}")
-    print(
-        "Melhor partícula: "
-        f"iteração={best_profile['iteration']} "
-        f"partícula={best_profile['particle']} "
-        f"MSE={best_profile['mse']:.6f}"
-    )
-
+    ax_best.set_title("Best Residual Stress Profile Found", fontsize=14, fontweight="bold", pad=15)
+    ax_best.legend(loc="upper right")
+    
     plt.show()
 
 

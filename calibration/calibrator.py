@@ -52,6 +52,11 @@ class PSOCalibrator:
         config['lspModel']['modelBuilder']['material']['johnsonCook']['a'] = float(particle[0])
         config['lspModel']['modelBuilder']['material']['johnsonCook']['b'] = float(particle[1])
         config['lspModel']['modelBuilder']['material']['johnsonCook']['n'] = float(particle[2])
+        config['lspModel']['modelBuilder']['material']['johnsonCook']['c'] = float(particle[3])
+        config['lspModel']['modelBuilder']['pulse']['p0'] = float(particle[4])
+        config['lspModel']['modelBuilder']['pulse']['pMax'] = float(particle[5])
+        config['lspModel']['modelBuilder']['pulse']['rMax'] = float(particle[6])
+        config['lspModel']['modelBuilder']['pulse']['timeMax'] = float(particle[7])
         
         with open(self.config_file_path, 'w') as file:
             json.dump(config, file, indent=4)

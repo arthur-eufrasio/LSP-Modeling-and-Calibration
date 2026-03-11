@@ -27,6 +27,12 @@ for %%i in ("%BASE_DIR%\data\*") do (
     if /I not "%%~nxi"==".gitkeep" del /q "%%i"
 )
 
+REM Clean log directory
+echo Cleaning %BASE_DIR%\log...
+for %%i in ("%BASE_DIR%\log\*") do (
+    if /I not "%%~nxi"==".gitkeep" del /q "%%i"
+)
+
 echo.
 echo Cleanup process finished successfully!
 pause

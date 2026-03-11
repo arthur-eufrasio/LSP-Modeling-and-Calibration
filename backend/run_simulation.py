@@ -89,12 +89,12 @@ class Simulation:
         self.log("      - Creating parts...", self.logFilePath)
         geo_params = self.modelBuilder['geometry']
 
-        lenght_finite_cube = geo_params['lengthFiniteCube']
+        length_finite_cube = geo_params['lengthFiniteCube']
         height_finite_cube = geo_params['heightFiniteCube']
         infinite_border = geo_params['infiniteBorder']
 
         point1_finite_cube = (0.0, infinite_border)
-        point2_finite_cube = (lenght_finite_cube, infinite_border + height_finite_cube)
+        point2_finite_cube = (length_finite_cube, infinite_border + height_finite_cube)
 
         sketch_finite_cube = self.model.ConstrainedSketch(name='sketch_finite_cube', sheetSize=200.0)
         sketch_finite_cube.sketchOptions.setValues(viewStyle=AXISYM)
@@ -105,7 +105,7 @@ class Simulation:
         finite_cube_part.BaseShell(sketch=sketch_finite_cube)
 
         point1_infinite_cube = (0.0, 0.0)
-        point2_infinite_cube = (lenght_finite_cube + infinite_border, infinite_border + height_finite_cube)
+        point2_infinite_cube = (length_finite_cube + infinite_border, infinite_border + height_finite_cube)
 
         sketch_infinite_cube = self.model.ConstrainedSketch(name='sketch_infinite_cube', sheetSize=200.0)
         sketch_infinite_cube.sketchOptions.setValues(viewStyle=AXISYM)
@@ -183,7 +183,7 @@ class Simulation:
         self.log("      - Creating partitions...", self.logFilePath)
         geo_params = self.modelBuilder['geometry']
         height_finite_cube = geo_params['heightFiniteCube']
-        side_interest_region = geo_params['lenghtInterestRegion']
+        side_interest_region = geo_params['lengthInterestRegion']
         height_interest_region = geo_params['heightInterestRegion']
         infinite_border = geo_params['infiniteBorder']
 
@@ -235,7 +235,7 @@ class Simulation:
                 (0.0, total_height, 0.0, p0), 
                 (rMax, total_height, 0.0, pMax), 
                 (r, total_height, 0.0, 0.0),
-                (geo_params['lenghtInterestRegion'], total_height, 0.0, 0.0)
+                (geo_params['lengthInterestRegion'], total_height, 0.0, 0.0)
                 ))
         
         self.model.TabularAmplitude(

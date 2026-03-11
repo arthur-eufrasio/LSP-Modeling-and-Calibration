@@ -4,11 +4,11 @@
         "bounds_max": [400.0, 800.0, 0.6, 0.025, 3000.0, 4000.0, 1.6, 7e-08]
     },
     "pso_hyperparameters": {
-        "c1": 0.5,
-        "c2": 0.3,
-        "w": 0.9
+        "c1": 1.5,
+        "c2": 1.5,
+        "w": 0.75
     },
     "dimensions": 8,
-    "n_particles": 2,
-    "n_iterations": 2
+    "n_particles": 10,
+    "n_iterations": 80
 }

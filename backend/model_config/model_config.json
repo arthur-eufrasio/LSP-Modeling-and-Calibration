@@ -29,15 +29,15 @@
         },
         "modelBuilder": {
             "pulse": {
-                "p0": 2500.0,
-                "pMax": 3000.0,
-                "rMax": 1.5,
+                "p0": 2982.712028368595,
+                "pMax": 2693.9655001857564,
+                "rMax": 1.5624370526896123,
                 "r": 1.75,
-                "timeMax": 3e-08
+                "timeMax": 1.4275125066125739e-08
             },
             "step": {
-                "durationShotPhase": 600e-9,
-                "durationRestPhase": 15000e-9,
+                "durationShotPhase": 6e-07,
+                "durationRestPhase": 3e-05,
                 "totalFrames": 20
             },
             "mesh": {
@@ -45,21 +45,21 @@
                 "maxElementSize": 0.2
             },
             "geometry": {
-                "lengthFiniteCube": 5.0,
-                "heightFiniteCube": 5.0,
+                "lengthFiniteCube": 7.0,
+                "heightFiniteCube": 7.0,
                 "infiniteBorder": 0.5,
-                "lenghtInterestRegion": 3.0,
-                "heightInterestRegion": 3.0
+                "lengthInterestRegion": 2.5,
+                "heightInterestRegion": 2.5
             },
             "material": {
                 "johnsonCook": {
-                    "a": 247.24336585729435,
-                    "b": 683.7053552307075,
-                    "n": 0.29776548544129033,
+                    "a": 388.1385226661829,
+                    "b": 799.0992839721438,
+                    "n": 0.300612044714354,
                     "m": 0,
                     "meltingTemp": 0,
                     "transitionTemp": 0,
-                    "c": 0.015,
+                    "c": 0.020090491484338512,
                     "epsilonDotZero": 1
                 },
                 "elastic": {
@@ -71,8 +71,8 @@
             "job": {
                 "numCPUs": 12
             },
-            "particleNumber": 1,
-            "iterationNumber": 1
+            "particleNumber": 5,
+            "iterationNumber": 0
         }
     }
 }

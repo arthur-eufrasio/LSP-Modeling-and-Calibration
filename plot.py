@@ -162,7 +162,7 @@ def main():
         ax_anim.legend(loc="upper right")
         return particle_lines + [title_text]
 
-    print("Playing animation... Close the window to see the best profile result.")
+    print("Generating animation...")
     ani = FuncAnimation(
         fig_anim, 
         update, 
@@ -171,6 +171,13 @@ def main():
         repeat=False,
         blit=False
     )
+    
+    # Save the animation as a GIF
+    gif_filename = "calibration_evolution.gif"
+    print(f"Saving animation to '{gif_filename}'...")
+    ani.save(gif_filename, writer="pillow")
+    
+    print("Playing animation... Close the window to see the best profile result.")
     plt.show() 
 
     # ==========================================
@@ -211,6 +218,11 @@ def main():
 
     ax_best.set_title("Best Residual Stress Profile Found", fontsize=14, fontweight="bold", pad=15)
     ax_best.legend(loc="upper right")
+    
+    # Save the best profile as a PNG image
+    png_filename = "best_profile.png"
+    print(f"Saving best profile plot to '{png_filename}'...")
+    fig_best.savefig(png_filename, dpi=300, bbox_inches="tight")
     
     plt.show()
 

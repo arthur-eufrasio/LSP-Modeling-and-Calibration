@@ -421,7 +421,7 @@ class Simulation:
             resultsFormat=ODB, scratch='', type=ANALYSIS, userSubroutine='', waitHours=
             0, waitMinutes=0)
         
-        job.submit(consistencyChecking=OFF)
+        job.submit()
         self.log("      - Job submitted successfully.", self.logFilePath)
 
         job.waitForCompletion()

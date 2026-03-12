@@ -35,4 +35,3 @@ for %%i in ("%BASE_DIR%\log\*") do (
 
 echo.
 echo Cleanup process finished successfully!
-pause

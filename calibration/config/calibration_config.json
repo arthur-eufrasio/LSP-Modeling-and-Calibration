@@ -9,6 +9,6 @@
         "w": 0.75
     },
     "dimensions": 8,
-    "n_particles": 10,
+    "n_particles": 15,
     "n_iterations": 80
 }

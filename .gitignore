@@ -6,7 +6,7 @@ backend/data/
 abaqus_acis.log
 backend/log/abaqus_log.txt
 backend/files/
-
+*.gif
 *.odb
 *.rec
 *.png

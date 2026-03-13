@@ -5,7 +5,6 @@ import subprocess
 import numpy as np
 import pyswarms as ps
 import sys
-from utilities.clean_files import clean_files
 
 sys.dont_write_bytecode = True
 
@@ -65,10 +64,31 @@ class PSOCalibrator:
         os.environ["BACKEND_PROJECT_PATH"] = os.path.join(os.getcwd(), "backend")
         abaqus_command = f'"{self.abaqus_cmd_path}" cae noGUI="backend/command.py"'
         
-        subprocess.run(
-            abaqus_command, shell=True, check=True, capture_output=True, text=True
-        )
-        clean_files()
+        stdout_path = os.path.join(os.environ["BACKEND_PROJECT_PATH"], "log", "subprocess_stdout.log")
+        stderr_path = os.path.join(os.environ["BACKEND_PROJECT_PATH"], "log", "subprocess_stderr.log")
+
+        MAX_SIMULATION_TIME = 600 
+
+        try:
+            with open(stdout_path, "w") as out_file, open(stderr_path, "w") as err_file:
+                subprocess.run(
+                    abaqus_command, 
+                    shell=True, 
+                    check=True, 
+                    stdout=out_file, 
+                    stderr=err_file, 
+                    text=True,
+                    timeout=MAX_SIMULATION_TIME
+                )
+        except subprocess.TimeoutExpired:
+            print(f"\n[WARNING] Abaqus simulation exceeded {MAX_SIMULATION_TIME} seconds. Killing process...")
+            raise RuntimeError("Simulation timed out due to severe element distortion or hanging.")
+        except subprocess.CalledProcessError as e:
+            print(f"\n[ERROR] Abaqus failed with return code {e.returncode}.")
+            raise
+        finally:
+            from utilities.clean_files import clean_files
+            clean_files()
 
     def _evaluate_particle(self, particle, particle_index):
         try:

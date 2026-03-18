@@ -3,9 +3,12 @@ __pycache__/
 *.pyc
 
 backend/data/
-abaqus_acis.log
-backend/log/abaqus_log.txt
+backend/log/
 backend/files/
+
+abaqus_acis.log
+report.log
+
 *.gif
 *.odb
 *.rec
@@ -13,4 +16,3 @@ backend/files/
 *.lck
 *.txt
 *.rpy
-report.log

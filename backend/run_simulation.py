@@ -403,7 +403,7 @@ class Simulation:
         self._modify_element_type(inp_file_path, "ACAX4", "CINAX4")
 
         os.chdir(cae_path)
-        mdb.saveAs(self.modelName + '_i{}_p{}'.format(self.iterationNumber, self.particleNumber) + '.cae')
+        mdb.saveAs(self.modelName + '.cae')
 
         os.chdir(job_path)
         mdb.ModelFromInputFile(name=self.modelName + '_infinite', inputFileName= inp_file_path)

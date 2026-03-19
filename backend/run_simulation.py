@@ -388,6 +388,7 @@ class Simulation:
         files_path = os.path.join(self.backendPath, 'files')
         inp_path = os.path.join(files_path, 'inp')
         job_path = os.path.join(files_path, 'job')
+        cae_path = os.path.join(files_path, 'cae')
 
         if not os.path.exists(inp_path):
             os.makedirs(inp_path)
@@ -400,6 +401,9 @@ class Simulation:
 
         inp_file_path = os.path.join(inp_path, 'JobMock.inp')
         self._modify_element_type(inp_file_path, "ACAX4", "CINAX4")
+
+        os.chdir(cae_path)
+        mdb.saveAs(self.modelName + '_i{}_p{}'.format(self.iterationNumber, self.particleNumber) + '.cae')
 
         os.chdir(job_path)
         mdb.ModelFromInputFile(name=self.modelName + '_infinite', inputFileName= inp_file_path)

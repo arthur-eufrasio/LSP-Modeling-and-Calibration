@@ -1,5 +1,5 @@
 {
-    "": {
+    "0200_model": {
         "odbExtractor": {
             "stepName": "RestPhase",
             "surfacePointPath": [[0.0, null, 0.0], [5.0, null, 0]],
@@ -19,7 +19,7 @@
                 "totalFrames": 20
             },
             "mesh": {
-                "interestRegionSize": 0.1,
+                "interestRegionSize": 0.2,
                 "maxElementSize": 0.2
             },
             "geometry": {

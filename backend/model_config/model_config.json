@@ -1,17 +1,17 @@
 {
-    "lspModel02": {
+    "": {
         "odbExtractor": {
             "stepName": "RestPhase",
-            "surfacePointPath": [[0.0, null, 0.0], [4.0, null, 0]],
-            "depthPointPath": [[0.0, null, 0.0], [0.0, -2.0, 0]]
+            "surfacePointPath": [[0.0, null, 0.0], [5.0, null, 0]],
+            "depthPointPath": [[0.0, null, 0.0], [0.0, -3.0, 0]]
         },
         "modelBuilder": {
             "pulse": {
-                "p0": 2.5e3,
-                "pMax": 3.0e3,
-                "rMax": 1.5,
-                "r": 1.75,
-                "timeMax": 30e-9
+                "p0": 4.0e3,
+                "pMax": 5.0e3,
+                "rMax": 1.6,
+                "r": 2.0,
+                "timeMax": 80e-9
             },
             "step": {
                 "durationShotPhase": 300e-9,
@@ -23,11 +23,11 @@
                 "maxElementSize": 0.2
             },
             "geometry": {
-                "lengthFiniteCube": 7.0,
-                "heightFiniteCube": 7.0,
+                "lengthFiniteCube": 12.0,
+                "heightFiniteCube": 12.0,
                 "infiniteBorder": 0.5,
-                "lenghtInterestRegion": 4.0,
-                "heightInterestRegion": 4.0
+                "lenghtInterestRegion": 6.0,
+                "heightInterestRegion": 6.0
             },
             "material": {
                 "johnsonCook": {
@@ -47,7 +47,7 @@
                 "density": 2.77e-09
             },
             "job": {
-                "numCPUs": 4
+                "numCPUs": 6
             }
         }
     }

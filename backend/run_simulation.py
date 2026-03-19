@@ -87,7 +87,7 @@ class Simulation:
         self.log("      - Creating parts...", self.logFilePath)
         geo_params = self.modelBuilder['geometry']
 
-        lenght_finite_cube = geo_params['lenghtFiniteCube']
+        lenght_finite_cube = geo_params['lengthFiniteCube']
         height_finite_cube = geo_params['heightFiniteCube']
         infinite_border = geo_params['infiniteBorder']
 
@@ -144,7 +144,7 @@ class Simulation:
         self.model.HomogeneousSolidSection(material='johnsonCook', name='SectionJohnsonCook', thickness=None)
         
         faces_jc = self.workpiecePart.faces.findAt(((
-            geo_params['lenghtFiniteCube'] / 2.0, 
+            geo_params['lengthFiniteCube'] / 2.0, 
             geo_params['heightFiniteCube'] / 2.0 + geo_params['infiniteBorder'], 
             0.0),))
         set_section_jhonson_cook = self.workpiecePart.Set(faces=faces_jc, name='SetSectionJohnsonCook')
@@ -153,7 +153,7 @@ class Simulation:
                                          thicknessAssignment=FROM_SECTION)
         
         faces_elastic = self.workpiecePart.faces.findAt(((
-            ( geo_params['lenghtFiniteCube'] + geo_params['infiniteBorder']) / 2.0, 
+            ( geo_params['lengthFiniteCube'] + geo_params['infiniteBorder']) / 2.0, 
              geo_params['infiniteBorder'] / 2.0, 
              0.0),))
         set_section_elastic = self.workpiecePart.Set(faces=faces_elastic, name='SetSectionElastic')
@@ -198,7 +198,7 @@ class Simulation:
             )
         
         faces_jc = self.workpiecePart.faces.findAt(((
-            geo_params['lenghtFiniteCube'] / 2.0, 
+            geo_params['lengthFiniteCube'] / 2.0, 
             geo_params['heightFiniteCube'] / 2.0 + geo_params['infiniteBorder'], 
             0.0),))
 

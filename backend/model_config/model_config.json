@@ -1,5 +1,5 @@
 {
-    "lspModel01": {
+    "lspModel02": {
         "odbExtractor": {
             "stepName": "RestPhase",
             "surfacePointPath": [[0.0, null, 0.0], [4.0, null, 0]],
@@ -23,7 +23,7 @@
                 "maxElementSize": 0.2
             },
             "geometry": {
-                "lenghtFiniteCube": 7.0,
+                "lengthFiniteCube": 7.0,
                 "heightFiniteCube": 7.0,
                 "infiniteBorder": 0.5,
                 "lenghtInterestRegion": 4.0,
@@ -47,7 +47,7 @@
                 "density": 2.77e-09
             },
             "job": {
-                "numCPUs": 16
+                "numCPUs": 4
             }
         }
     }

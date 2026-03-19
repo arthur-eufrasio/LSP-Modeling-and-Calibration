@@ -14,8 +14,8 @@
                 "timeMax": 80e-9
             },
             "step": {
-                "durationShotPhase": 300e-9,
-                "durationRestPhase": 1000e-9,
+                "durationShotPhase": 600e-9,
+                "durationRestPhase": 50000e-9,
                 "totalFrames": 20
             },
             "mesh": {

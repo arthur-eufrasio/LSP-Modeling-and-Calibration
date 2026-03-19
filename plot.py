@@ -1,13 +1,15 @@
 import json
 import matplotlib.pyplot as plt
 
-file_path = 'backend/data/stress_profile.json'
+file_path = "C:/Users/arthu/Desktop/arthur/git/LSP-Modeling-and-Calibration/backend/data/0200_model_stress_profile.json"
+model_name = file_path.split('/')[-1].split('_')[0] + '_model' # Extract model name from file name
+ele_size = int(file_path.split('/')[-1].split('_')[0])
 
 with open(file_path, 'r') as file:
     data = json.load(file)
 
-depth_data = data["lspModel01"]["depth"]
-surface_data = data["lspModel01"]["surface"]
+depth_data = data[model_name]["depth"]
+surface_data = data[model_name]["surface"]
 
 depth_x = [point[0] for point in depth_data]
 depth_y = [point[1] for point in depth_data]

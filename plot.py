@@ -45,10 +45,10 @@ for file_path in json_files:
     surface_y = [point[1] for point in surface_data]
 
     # Plot on Depth Figure (letting Matplotlib auto-assign colors)
-    ax_depth.plot(depth_x, depth_y, marker='o', linestyle='-', label=f'{ele_size} µm')
+    ax_depth.plot(depth_x, depth_y, markersize=4, marker='o', linestyle='-', label=f'{ele_size} µm')
 
     # Plot on Surface Figure (letting Matplotlib auto-assign colors)
-    ax_surf.plot(surface_x, surface_y, marker='s', linestyle='--', label=f'{ele_size} µm')
+    ax_surf.plot(surface_x, surface_y, markersize=4, marker='s', linestyle='--', label=f'{ele_size} µm')
 
 # --- Finalize Figure 1: Depth ---
 ax_depth.axhline(0, color='black', linewidth=1)

@@ -1,62 +1,80 @@
-# Relatório Técnico: Modelação e Calibração Automatizada de Laser Shock Peening (LSP)
+# Automated Calibration of Laser Shock Peening (LSP) Models using PSO
 
-## 1. Objetivo
-A determinação das propriedades exatas de materiais sujeitos a altas taxas de deformação, como ocorre no processo de *Laser Shock Peening* (LSP), é um desafio complexo. A utilização de dados de literatura muitas vezes não reflete o comportamento real do material sob as condições específicas do laser.
+This project implements an advanced closed-loop computational architecture to model the **Laser Shock Peening (LSP)** process using **Abaqus (SIMULIA)** and automatically calibrate its parameters through **Particle Swarm Optimization (PSO)**.
 
-O objetivo deste projeto é desenvolver uma arquitetura computacional em circuito fechado (*closed-loop*) para calibrar automaticamente os parâmetros do modelo constitutivo de *Johnson-Cook* ($A$, $B$ e $n$). Através da otimização heurística, o sistema ajusta estes parâmetros iterativamente até que o perfil de tensão residual simulado corresponda ao perfil alvo obtido experimentalmente.
-
----
-
-## 2. Configuração da Simulação Numérica (Abaqus)
-A base física deste projeto assenta num modelo de elementos finitos desenvolvido no Abaqus. 
-
-* **Abordagem Dinâmica Explícita:** O processo de LSP caracteriza-se por um impacto de curtíssima duração. Utilizamos o *solver* `Abaqus/Explicit` para capturar a propagação das ondas de choque de alta frequência através da espessura do material.
-* **Modelo Constitutivo:** O material é modelado utilizando a lei de *Johnson-Cook*, que relaciona a tensão de escoamento com a deformação plástica e a taxa de deformação.
-* **Carregamento (Loading):** O impacto do laser é modelado como um pulso de pressão dependente do tempo e do espaço, aplicado na superfície superior do bloco metálico.
-* **Fases da Simulação:** A simulação é dividida em dois passos principais: a fase de impacto dinâmico (onde a pressão é aplicada) e a fase de relaxamento (onde a energia se dissipa e o campo de tensões estabiliza).
+The primary objective is to eliminate manual trial-and-error by automating the discovery of the *Johnson-Cook* constitutive model parameters and the spatial-temporal profile of the laser pulse. The system iteratively evaluates the Mean Squared Error (MSE) until the simulated residual stress profile perfectly matches a target experimental curve.
 
 ---
 
-## 3. Estudo de Convergência de Malha
-Para garantir a precisão dos resultados e evitar tempos de computação desnecessários, foi realizado um estudo rigoroso de convergência de malha.
+## 🔬 Theoretical Framework
 
-* **Estratégia:** Foi aplicada uma técnica de particionamento (*bias*), onde a zona de impacto (superfície) possui uma malha extremamente refinada para capturar os elevados gradientes de tensão e deformação, enquanto as zonas mais profundas e afastadas possuem elementos maiores.
-* **Elementos Utilizados:** Foram utilizados elementos hexaédricos com integração reduzida para evitar problemas de *volumetric locking* e garantir a correta propagação da onda de choque.
-* **Resultado:** O tamanho do elemento na zona de impacto foi progressivamente reduzido até que o perfil de tensão residual na profundidade atingisse uma assíntota (mudança negligenciável entre iterações).
+### 1. The Material Model (Johnson-Cook)
+The LSP process involves ultra-high strain rates. To capture the material behavior accurately, the Abaqus Explicit solver utilizes the Johnson-Cook plasticity model. The flow stress $\sigma$ is expressed as:
 
-*> Figura 1: Variação da tensão residual de pico em função do tamanho característico do elemento na zona de impacto.*
+$$\sigma = (A + B \varepsilon^n)(1 + C \ln \dot{\varepsilon}^*)$$
 
----
+Where the optimizer is responsible for finding the exact values for 4 highly sensitive variables:
+* **$A$**: Initial yield stress.
+* **$B$**: Hardening modulus.
+* **$n$**: Hardening exponent.
+* **$C$**: Strain rate dependency coefficient.
 
-## 4. Convergência do Tamanho do Modelo
-Em simulações dinâmicas de ondas de choque, os limites geométricos do modelo podem causar reflexões artificiais (efeito de fronteira) que retornam à zona de interesse e poluem os resultados da tensão residual.
-
-* **Metodologia:** As dimensões laterais e a profundidade do bloco foram progressivamente aumentadas.
-* **Critério de Aceitação:** O tamanho ideal do modelo foi estabelecido no ponto em que as ondas de tensão refletidas pelas fronteiras já não têm energia suficiente para alterar o estado de tensão residual no centro da peça (zona de medição). Isto assegura que o modelo numérico representa de forma fiel um meio semi-infinito, análogo a uma peça real de grandes dimensões.
-
-*> Figura 2: Impacto da reflexão das ondas de choque no perfil de tensão de acordo com as dimensões do bloco.*
-
----
-
-## 5. Convergência do Tempo de Relaxamento
-Um dos aspetos mais críticos da modelação de LSP é determinar o momento exato em que o processo dinâmico termina e a peça atinge o equilíbrio estático. Extrair os resultados demasiado cedo resulta na medição de vibrações elásticas transientes, e não da verdadeira tensão residual.
-
-* **Análise Energética:** Monitorizou-se o rácio entre a Energia Cinética (ALLKE) e a Energia Interna (ALLIE) do sistema ao longo do tempo.
-* **Critério de Paragem:** O tempo de relaxamento foi considerado convergente quando a energia cinética do sistema caiu para uma fração negligenciável (geralmente < 1% a 5%) da energia interna total, indicando que as oscilações cessaram e o campo de tensões residuais está permanentemente estabelecido.
-
-*> Figura 3: Dissipação da Energia Cinética vs. Tempo de Relaxamento.*
+### 2. The Laser Pulse Profile
+Instead of assuming a perfect theoretical laser impact, the algorithm also calibrates the mechanical pressure wave generated by the plasma. The optimization bounds include 4 laser parameters:
+* **$p_0$**: Initial pressure at the center of the impact.
+* **$p_{max}$**: Peak pressure achieved during the pulse.
+* **$r_{max}$**: Effective radius of the maximum pressure zone.
+* **$t_{max}$**: Total duration of the pressure pulse.
 
 ---
 
-## 6. Otimização por Enxame de Partículas (PSO) e Automação
-Com o modelo de elementos finitos validado (malha, tamanho e relaxamento otimizados), implementou-se a camada de calibração utilizando *Particle Swarm Optimization* (PSO).
+## 🚀 Computational Architecture & Robustness
 
-* **Arquitetura:** O processo é gerido por um ambiente Python externo (`pyswarms`), que interage de forma autónoma com o Abaqus através de ficheiros JSON de configuração.
-* **O Algoritmo:**
-  1. O enxame é inicializado com várias "partículas", cada uma contendo um palpite para os parâmetros de *Johnson-Cook* ($A, B, n$).
-  2. Para cada partícula, o Python atualiza o ficheiro `model_config.json` e lança o Abaqus em modo invisível (`noGUI`).
-  3. O Abaqus constrói a geometria, aplica a malha convergida, simula o impacto, aguarda o tempo de relaxamento e extrai as tensões da superfície para um ficheiro JSON de saída.
-  4. O Python lê esta saída e calcula a Função Objetivo (Erro Quadrático Médio - MSE) comparando a simulação com a `target_curve.pkl`.
-  5. As partículas ajustam as suas posições (parâmetros $A, B, n$) com base no seu próprio sucesso e no sucesso do grupo, convergindo progressivamente para o erro mínimo.
+This project solves the classic bottleneck of integrating modern Machine Learning libraries (`pyswarms`) with the legacy, enclosed Python environment inside Abaqus.
 
-*> Animação 1: Evolução das tentativas de calibração do enxame iterando em direção ao perfil de tensão alvo.*
+### The Closed-Loop Workflow
+1.  **Initialization:** The external Python environment initializes a swarm of particles. Each particle represents a unique 8D array of guesses for the parameters mentioned above.
+2.  **Configuration Injection:** The optimizer updates the `backend/model_config/model_config.json` file for each particle.
+3.  **Headless Simulation:** Abaqus CAE is invoked via a background subprocess (`noGUI`). It reads the JSON, generates the axisymmetric geometry, applies partitioned meshing and infinite boundary elements (`CINAX4`), and submits the explicit dynamic job.
+4.  **Data Extraction:** Once the dynamic impact and the subsequent rest phase (relaxation) are complete, the script extracts the surface and depth residual stress profiles from the `.odb` file directly into a new JSON file.
+5.  **Cost Evaluation:** The external Python reads the output, compares it against the `target_curve.pkl` using MSE, and updates the swarm's velocity and position vectors for the next generation.
+
+### Subprocess Deadlock Prevention
+Combining heuristic optimization with Finite Element Analysis (FEA) often leads to system crashes when evaluating "bad" particles (e.g., extremely low yield stress combined with high laser pressure). 
+* **Buffer Overflow Protection:** Abaqus output (`stdout` and `stderr`) is explicitly redirected to physical log files (`backend/log/`). This prevents the OS 64KB pipe limit from filling up and causing a mutual deadlock between Python and Abaqus.
+* **Timeouts:** If a severely distorted mesh causes the stable time increment to drop to near zero, the simulation will hang indefinitely. The `PSOCalibrator` implements a strict 600-second timeout. If exceeded, the process is killed, heavily penalized with an MSE of `1e6`, and the swarm moves on smoothly.
+
+---
+
+## 📂 Repository Structure
+
+* `backend/` - **The Internal Environment (Abaqus Python)**
+    * `command.py`: Main entry point invoked by Abaqus.
+    * `run_simulation.py`: Builds the FEA model, mesh, and submits the explicit job.
+    * `run_extraction.py`: Opens the `.odb` and extracts residual stress paths.
+    * `data/`: Stores JSON results extracted from each particle iteration.
+    * `files/`: Holds the generated `.inp`, `.cae`, and `.odb` files.
+    * `model_config/`: Contains the bridge configuration file (`model_config.json`).
+* `calibration/` - **The External Environment (Modern Python)**
+    * `calibrator.py`: Contains the PSO algorithm logic and subprocess management.
+    * `config/`: Holds `calibration_config.json` (PSO bounds and hyperparameters) and the target experimental data (`target_curve.pkl`).
+* `utilities/` - Contains the `clean_files.py` script to clear cache, `.lck`, and `.rpy` files.
+* `plot.py` - Renders results, creating static plots and `.gif` animations of the calibration.
+* `run_calibration.py` - The main trigger to start the closed-loop optimization.
+* `delete_files.bat` - Deep cleans the working directories.
+
+---
+
+## ⚙️ Setup and Execution
+
+### Prerequisites
+1.  **Abaqus (SIMULIA):** Installed and accessible (default path: `C:\SIMULIA\Abaqus\Commands\abaqus.bat`).
+2.  **Python 3.8+:** For the external environment.
+3.  **Dependencies:** ```bash
+    pip install numpy scipy matplotlib pyswarms
+    ```
+
+### 1. Test the Environment
+Before running a massive calibration, ensure the Python-Abaqus communication is working:
+```bash
+python run_simulation_extraction.py

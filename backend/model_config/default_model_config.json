@@ -2,30 +2,8 @@
     "test": {
         "odbExtractor": {
             "stepName": "RestPhase",
-            "surfacePointPath": [
-                [
-                    0.0,
-                    null,
-                    0.0
-                ],
-                [
-                    1.0,
-                    null,
-                    0.0
-                ]
-            ],
-            "depthPointPath": [
-                [
-                    0.0,
-                    null,
-                    0.0
-                ],
-                [
-                    0.0,
-                    -1.0,
-                    0.0
-                ]
-            ]
+            "surfacePointPath": [[0.0, null, 0.0], [1.0, null, 0.0]],
+            "depthPointPath": [[0.0, null, 0.0], [0.0, -1.0, 0.0]]
         },
         "modelBuilder": {
             "pulse": {

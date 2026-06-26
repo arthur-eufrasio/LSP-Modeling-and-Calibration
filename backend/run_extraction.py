@@ -37,17 +37,15 @@ class OdbDataExtractor:
         self.odb = openOdb(path=odb_path)
         session.viewports['Viewport: 1'].setValues(displayedObject=self.odb)
 
-        step_name = str(odb_config["stepName"])
+        step_name = "RestPhase"
         last_frame_index = len(self.odb.steps[step_name].frames) - 1
 
-        surface_point_path = odb_config["surfacePointPath"]
+        x_surface = odb_config["surfacePathDistance"]
         height_model = model_config["geometry"]["heightFiniteCube"] + model_config["geometry"]["infiniteBorder"]
-        surface_point_path[0][1] = height_model
-        surface_point_path[1][1] = height_model
+        surface_point_path = [[0.0, height_model, 0.0], [x_surface, height_model, 0.0]]
 
-        depth_point_path = odb_config["depthPointPath"]
-        depth_point_path[0][1] = height_model
-        depth_point_path[1][1] = depth_point_path[1][1] + height_model
+        y_depth = odb_config["depthPathDistance"]
+        depth_point_path = [[0.0, height_model, 0.0], [0.0, height_model - y_depth, 0.0]]
 
         path_obj_name = "surface_path_{}".format(odb_name)
         path_points = tuple(tuple(p) for p in surface_point_path)

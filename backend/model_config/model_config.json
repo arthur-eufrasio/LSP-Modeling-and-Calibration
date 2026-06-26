@@ -1,31 +1,8 @@
 {
-    "test": {
+    "DefaultModel": {
         "odbExtractor": {
-            "stepName": "RestPhase",
-            "surfacePointPath": [
-                [
-                    0.0,
-                    null,
-                    0.0
-                ],
-                [
-                    1.0,
-                    null,
-                    0.0
-                ]
-            ],
-            "depthPointPath": [
-                [
-                    0.0,
-                    null,
-                    0.0
-                ],
-                [
-                    0.0,
-                    -1.0,
-                    0.0
-                ]
-            ]
+            "surfacePathDistance": 2.0,
+            "depthPathDistance": 3.0
         },
         "modelBuilder": {
             "pulse": {
@@ -48,7 +25,7 @@
                 "lengthFiniteCube": 12.0,
                 "heightFiniteCube": 12.0,
                 "infiniteBorder": 0.5,
-                "lenghtInterestRegion": 6.0,
+                "lengthInterestRegion": 6.0,
                 "heightInterestRegion": 6.0
             },
             "material": {

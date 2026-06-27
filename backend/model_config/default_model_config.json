@@ -3,62 +3,62 @@
         "labelUI": "Default Model",
         "odbExtractor": {
             "labelUI": "Extraction Parameters",
-            "surfacePathDistance": { "value": 2.0, "unit": "mm", "labelUI": "Surface path distance" },
-            "depthPathDistance": { "value": 3.0, "unit": "mm", "labelUI": "Depth path distance" }
-        },
+            "surfacePathDistance": {"value": 2.0, "unit": "mm", "labelUI": "Surface Path Distance"},
+            "depthPathDistance": {"value": 3.0, "unit": "mm", "labelUI": "Depth Path Distance"}
+       },
         "modelBuilder": {
             "labelUI": "Model Builder",
             "pulse": {
                 "labelUI": "Pulse Settings",
-                "p0": { "value": 4000.0, "unit": "MPa", "labelUI": "Initial pressure (p0)" },
-                "pMax": { "value": 5000.0, "unit": "MPa", "labelUI": "Maximum pressure (pMax)" },
-                "rMax": { "value": 1.6, "unit": "mm", "labelUI": "Maximum radius (rMax)" },
-                "r": { "value": 2.0, "unit": "mm", "labelUI": "Radius (r)" },
-                "timeMax": { "value": 8e-08, "unit": "s", "labelUI": "Maximum time (timeMax)" }
-            },
+                "p0": {"value": 4.0, "unit": "GPa", "labelUI": "Initial Pressure"},
+                "pMax": {"value": 5.0, "unit": "GPa", "labelUI": "Maximum Pressure"},
+                "rMax": {"value": 1.6, "unit": "mm", "labelUI": "Maximum Radius"},
+                "diameter": {"value": 2.0, "unit": "mm", "labelUI": "Diameter"},
+                "totalPressureTime": {"value": 80, "unit": "ns", "labelUI": "Total Pressure Time"}
+           },
             "step": {
                 "labelUI": "Step Parameters",
-                "durationShotPhase": { "value": 6e-07, "unit": "s", "labelUI": "Shot phase duration" },
-                "durationRestPhase": { "value": 5e-05, "unit": "s", "labelUI": "Rest phase duration" },
-                "totalFrames": { "value": 20, "labelUI": "Total frames" }
-            },
+                "durationShotPhase": {"value": 6e-07},
+                "durationRestPhase": {"value": 50, "unit": "µs", "labelUI": "Rest Phase Duration"},
+                "totalFrames": {"value": 20}
+           },
             "mesh": {
                 "labelUI": "Mesh Properties",
-                "interestRegionSize": { "value": 0.1, "unit": "mm", "labelUI": "Interest region size" },
-                "maxElementSize": { "value": 0.2, "unit": "mm", "labelUI": "Maximum element size" }
-            },
+                "interestRegionSize": {"value": 0.1, "unit": "mm", "labelUI": "Interest Region Size"},
+                "maxElementSize": {"value": 0.2, "unit": "mm", "labelUI": "Maximum Element Size"}
+           },
             "geometry": {
                 "labelUI": "Geometry Dimensions",
-                "lengthFiniteCube": { "value": 12.0, "unit": "mm", "labelUI": "Finite cube length" },
-                "heightFiniteCube": { "value": 12.0, "unit": "mm", "labelUI": "Finite cube height" },
-                "infiniteBorder": { "value": 0.5, "unit": "mm", "labelUI": "Infinite border" },
-                "lengthInterestRegion": { "value": 6.0, "unit": "mm", "labelUI": "Interest region length" },
-                "heightInterestRegion": { "value": 6.0, "unit": "mm", "labelUI": "Interest region height" }
-            },
+                "lengthFiniteCube": {"value": 12.0, "unit": "mm", "labelUI": "Finite Cube Length"},
+                "heightFiniteCube": {"value": 12.0, "unit": "mm", "labelUI": "Finite Cube Height"},
+                "infiniteBorder": {"value": 0.5},
+                "lengthInterestRegion": {"value": 6.0, "unit": "mm", "labelUI": "Interest Region Length"},
+                "heightInterestRegion": {"value": 6.0, "unit": "mm", "labelUI": "Interest Region Height"}
+           },
             "material": {
                 "labelUI": "Material Properties",
                 "johnsonCook": {
                     "labelUI": "Johnson-Cook Model",
-                    "a": { "value": 265, "unit": "MPa", "labelUI": "Yield stress (A)" },
-                    "b": { "value": 426, "unit": "MPa", "labelUI": "Hardening constant (B)" },
-                    "n": { "value": 0.34, "labelUI": "Hardening exponent (n)" },
-                    "m": { "value": 0, "labelUI": "Thermal softening exponent (m)" },
-                    "meltingTemp": { "value": 0, "unit": "°C", "labelUI": "Melting temperature" },
-                    "transitionTemp": { "value": 0, "unit": "°C", "labelUI": "Transition temperature" },
-                    "c": { "value": 0.015, "labelUI": "Strain rate constant (C)" },
-                    "epsilonDotZero": { "value": 1, "unit": "1/s", "labelUI": "Reference strain rate" }
-                },
+                    "a": {"value": 265, "unit": "MPa", "labelUI": "Yield stress (A)"},
+                    "b": {"value": 426, "unit": "MPa", "labelUI": "Hardening constant (B)"},
+                    "n": {"value": 0.34, "labelUI": "Hardening exponent (n)"},
+                    "m": {"value": 0.0},
+                    "meltingTemp": {"value": 0.0},
+                    "transitionTemp": {"value": 0.0},
+                    "c": {"value": 0.015, "labelUI": "Strain rate constant (C)"},
+                    "epsilonDotZero": {"value": 1, "unit": "1/s", "labelUI": "Reference strain rate"}
+               },
                 "elastic": {
                     "labelUI": "Elasticity",
-                    "youngModulus": { "value": 71000.0, "unit": "MPa", "labelUI": "Young's modulus" },
-                    "poissonRatio": { "value": 0.33, "labelUI": "Poisson's ratio" }
-                },
-                "density": { "value": 2.77e-09, "unit": "tonne/mm³", "labelUI": "Density" }
-            },
+                    "youngModulus": {"value": 71.0, "unit": "GPa", "labelUI": "Young's modulus"},
+                    "poissonRatio": {"value": 0.33, "labelUI": "Poisson's ratio"}
+               },
+                "density": {"value": 2770.0, "unit": "kg/m³", "labelUI": "Density"}
+           },
             "job": {
                 "labelUI": "Job Settings",
-                "numCPUs": { "value": 6, "labelUI": "Number of CPUs" }
-            }
-        }
-    }
+                "numCPUs": {"value": 6, "labelUI": "Number of CPUs for running the simulation"}
+           }
+       }
+   }
 }

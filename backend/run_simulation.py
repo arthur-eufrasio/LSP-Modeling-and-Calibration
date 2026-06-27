@@ -71,17 +71,17 @@ class Simulation:
             jc_params['epsilonDotZero']), ), type=JOHNSON_COOK)
         
         self.materialJohnsonCook.Elastic(table=((
-            elastic_params['youngModulus'], 
+            elastic_params['youngModulus'] * 1e3, 
             elastic_params['poissonRatio']), ))
         
-        self.materialJohnsonCook.Density(table=((mat_params['density'], ), ))
+        self.materialJohnsonCook.Density(table=((mat_params['density'] * 1e-12, ), ))
 
         self.materialElastic = self.model.Material(name='elastic')
 
         self.materialElastic.Elastic(table=((
-            elastic_params['youngModulus'], 
+            elastic_params['youngModulus'] * 1e3, 
             elastic_params['poissonRatio']), ))
-        self.materialElastic.Density(table=((mat_params['density'], ), ))
+        self.materialElastic.Density(table=((mat_params['density'] * 1e-12, ), ))
 
     def _create_parts(self):
         self.log("      - Creating parts...", self.logFilePath)
@@ -174,7 +174,7 @@ class Simulation:
         self.model.ExplicitDynamicsStep(
             name='RestPhase', 
             previous='ShotPhase',
-            timePeriod=step_params['durationRestPhase']
+            timePeriod=step_params['durationRestPhase'] * 1e-6
         )
 
     def _create_partitions(self):
@@ -220,11 +220,11 @@ class Simulation:
         pulse_params = self.modelBuilder['pulse']
         geo_params = self.modelBuilder['geometry']
         total_height = geo_params['heightFiniteCube'] + geo_params['infiniteBorder']
-        p0 = pulse_params['p0']
-        pMax = pulse_params['pMax']
+        p0 = pulse_params['p0'] * 1e3
+        pMax = pulse_params['pMax'] * 1e3
         rMax = pulse_params['rMax']
-        r = pulse_params['r']
-        timeMax = pulse_params['timeMax']
+        r = pulse_params['diameter'] / 2.0
+        totalPressureTime = pulse_params['totalPressureTime'] * 1e-9
 
         self.model.MappedField(description='', fieldDataType=SCALAR, 
             localCsys=None, name='pulseLoadSpatialProfile', partLevelData=False, 
@@ -237,7 +237,7 @@ class Simulation:
                 ))
         
         self.model.TabularAmplitude(
-            data=((0.0, 0.0), (timeMax / 2.0, 1.0), (timeMax, 0.0)), 
+            data=((0.0, 0.0), (totalPressureTime / 2.0, 1.0), (totalPressureTime, 0.0)), 
             name='pulseLoadTemporalProfile',
             smooth=SOLVER_DEFAULT, 
             timeSpan=STEP

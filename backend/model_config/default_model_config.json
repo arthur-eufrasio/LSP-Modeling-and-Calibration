@@ -3,18 +3,18 @@
         "labelUI": "Default Model",
         "odbExtractor": {
             "labelUI": "Extraction Parameters",
-            "surfacePathDistance": {"value": 2.0, "unit": "mm", "labelUI": "Surface Path Distance"},
+            "surfacePathDistance": {"value": 3.0, "unit": "mm", "labelUI": "Surface Path Distance"},
             "depthPathDistance": {"value": 3.0, "unit": "mm", "labelUI": "Depth Path Distance"}
        },
         "modelBuilder": {
             "labelUI": "Model Builder",
             "pulse": {
                 "labelUI": "Pulse Settings",
-                "p0": {"value": 4.0, "unit": "GPa", "labelUI": "Initial Pressure"},
-                "pMax": {"value": 5.0, "unit": "GPa", "labelUI": "Maximum Pressure"},
-                "rMax": {"value": 1.6, "unit": "mm", "labelUI": "Maximum Radius"},
+                "p0": {"value": 2.0, "unit": "GPa", "labelUI": "Initial Pressure"},
+                "pMax": {"value": 3.0, "unit": "GPa", "labelUI": "Maximum Pressure"},
+                "rMax": {"value": 0.8, "unit": "mm", "labelUI": "Maximum Radius"},
                 "diameter": {"value": 2.0, "unit": "mm", "labelUI": "Diameter"},
-                "totalPressureTime": {"value": 80, "unit": "ns", "labelUI": "Total Pressure Time"}
+                "totalPressureTime": {"value": 60, "unit": "ns", "labelUI": "Total Pressure Time"}
            },
             "step": {
                 "labelUI": "Step Parameters",

@@ -87,7 +87,7 @@ class SimulationUI(tk.Tk):
         scroll_container = ttk.Frame(left_panel)
         scroll_container.pack(fill=tk.BOTH, expand=True)
 
-        self.canvas = tk.Canvas(scroll_container, bg="#eef2f5", highlightthickness=0, width=590)
+        self.canvas = tk.Canvas(scroll_container, bg="#eef2f5", highlightthickness=0, width=300)
         self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
         scrollbar = ttk.Scrollbar(scroll_container, orient="vertical", command=self.canvas.yview)
@@ -167,22 +167,26 @@ class SimulationUI(tk.Tk):
 
             path_tuple = base_path + (key,)
 
-            # Check if this item is a parameter (contains "value" and "labelUI")
-            if isinstance(item, dict) and "value" in item and "labelUI" in item:
-                self._create_entry_row(parent, row_idx, key, item, path_tuple)
-            
-            # If it doesn't contain "value", it's a nested subgroup
-            elif isinstance(item, dict):
-                group_label = item.get("labelUI", key)
-                section = ttk.LabelFrame(parent, text=group_label, padding=10)
+            if isinstance(item, dict):
+                # If it has a "value" key, it is a data parameter (leaf node)
+                if "value" in item:
+                    # ONLY create a UI element if "labelUI" is present
+                    if "labelUI" in item:
+                        self._create_entry_row(parent, row_idx, key, item, path_tuple)
+                        row_idx += 1
+                    # If "labelUI" is missing, we do nothing. 
+                    # It won't appear in the UI, but it will be preserved in the configuration copy.
                 
-                # Use columnspan=3 to ensure it stretches across label, entry, and unit columns
-                section.grid(row=row_idx, column=0, columnspan=3, sticky="ew", pady=6)
-                section.columnconfigure(1, weight=1)
-                
-                self._build_group_fields(section, item, path_tuple)
-            
-            row_idx += 1
+                # If it doesn't have a "value" key, it's a nested subgroup
+                else:
+                    group_label = item.get("labelUI", key)
+                    section = ttk.LabelFrame(parent, text=group_label, padding=10)
+                    
+                    section.grid(row=row_idx, column=0, columnspan=3, sticky="ew", pady=6)
+                    section.columnconfigure(1, weight=1)
+                    
+                    self._build_group_fields(section, item, path_tuple)
+                    row_idx += 1
 
     def _populate_fields_with_defaults(self):
         for child in self.form_frame.winfo_children():
@@ -192,14 +196,6 @@ class SimulationUI(tk.Tk):
         self.field_original_values = {}
 
         self.model_name_var.set(self.default_model_name)
-
-        # ODB Extractor block
-        odb_data = self.default_model_config.get("odbExtractor", {})
-        odb_label = odb_data.get("labelUI", "Extraction Parameters")
-        odb_group = ttk.LabelFrame(self.form_frame, text=odb_label, padding=10)
-        odb_group.pack(fill=tk.X, padx=4, pady=6)
-        odb_group.columnconfigure(1, weight=1)
-        self._build_group_fields(odb_group, odb_data, ("odbExtractor",))
 
         # Model Builder block
         model_builder = self.default_model_config.get("modelBuilder", {})
@@ -215,9 +211,17 @@ class SimulationUI(tk.Tk):
             group.columnconfigure(1, weight=1)
             self._build_group_fields(group, group_data, ("modelBuilder", group_name))
 
+        # ODB Extractor block
+        odb_data = self.default_model_config.get("odbExtractor", {})
+        odb_label = odb_data.get("labelUI", "Extraction Parameters")
+        odb_group = ttk.LabelFrame(self.form_frame, text=odb_label, padding=10)
+        odb_group.pack(fill=tk.X, padx=4, pady=6)
+        odb_group.columnconfigure(1, weight=1)
+        self._build_group_fields(odb_group, odb_data, ("odbExtractor",))
+
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
         self.status_var.set("Defaults loaded")
-        self._log("Defaults reloaded in the interface.")
+        self._log("Defaults parameters loaded in the interface.")
 
     def _parse_value(self, text_value, original_value):
         if isinstance(original_value, bool):
@@ -276,7 +280,8 @@ class SimulationUI(tk.Tk):
         if not model_name:
             raise ValueError("Please provide a model name.")
 
-        # Update a deep copy of the configuration structure with user inputs
+        # Update a deep copy of the configuration structure with user inputs.
+        # Hidden parameters (without labelUI) will naturally be preserved here.
         runtime_config = json.loads(json.dumps(self.default_model_config))
 
         for path_tuple, var in self.field_vars.items():

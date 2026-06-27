@@ -11,8 +11,8 @@ fig_depth, ax_depth = plt.subplots(figsize=(14, 10))
 fig_surf, ax_surf = plt.subplots(figsize=(14, 10))
 
 # Find all JSON files in the directory
-# This assumes your files end with '_model_stress_profile.json'
-search_pattern = os.path.join(folder_path, "*_model_stress_profile.json")
+# This assumes your files end with '_stress_profile.json'
+search_pattern = os.path.join(folder_path, "*_stress_profile.json")
 json_files = glob.glob(search_pattern)
 
 # Sort the files so they plot (and appear in the legend) in numerical order
@@ -22,9 +22,7 @@ json_files.sort()
 for file_path in json_files:
     # Extract filename, model name, and element size
     filename = os.path.basename(file_path)
-    prefix = filename.split('_')[0]
-    model_name = prefix + '_model'
-    ele_size = int(prefix)
+    model_name = filename.split('_')[0]
     
     # Load JSON data
     with open(file_path, 'r') as file:
@@ -45,10 +43,10 @@ for file_path in json_files:
     surface_y = [point[1] for point in surface_data]
 
     # Plot on Depth Figure (letting Matplotlib auto-assign colors)
-    ax_depth.plot(depth_x, depth_y, markersize=4, marker='o', linestyle='-', label=f'{ele_size} µm')
+    ax_depth.plot(depth_x, depth_y, markersize=4, marker='o', linestyle='-', label=f'{model_name}')
 
     # Plot on Surface Figure (letting Matplotlib auto-assign colors)
-    ax_surf.plot(surface_x, surface_y, markersize=4, marker='s', linestyle='--', label=f'{ele_size} µm')
+    ax_surf.plot(surface_x, surface_y, markersize=4, marker='s', linestyle='--', label=f'{model_name}')
 
 # --- Finalize Figure 1: Depth ---
 ax_depth.axhline(0, color='black', linewidth=1)

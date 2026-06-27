@@ -57,7 +57,7 @@
            },
             "job": {
                 "labelUI": "Job Settings",
-                "numCPUs": {"value": 6, "labelUI": "Number of CPUs for running the simulation"}
+                "numCPUs": {"value": 6, "labelUI": "Number of CPUs"}
            }
        }
    }

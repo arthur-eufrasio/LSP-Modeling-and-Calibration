@@ -91,9 +91,9 @@ Os parâmetros exibidos inicialmente são preenchidos a partir de `backend/model
 
 | Campo | Unidade | Significado |
 | --- | --- | --- |
-| Finite Cube Length | mm | Comprimento do modelo. |
+| Finite Cube Length | mm | Raio total do modelo. |
 | Finite Cube Height | mm | Altura do modelo. |
-| Interest Region Length | mm | Comprimento da região onde a malha é refinada. |
+| Interest Region Length | mm | Raio da região onde a malha é refinada. |
 | Interest Region Height | mm | Altura da região onde a malha é refinada |
 
 ### Model Builder > Propriedades do Material (Material Properties)

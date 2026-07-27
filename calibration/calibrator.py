@@ -1,10 +1,11 @@
 import os
 import json
-import pickle
 import subprocess
 import numpy as np
 import pyswarms as ps
 import sys
+
+from calibration.target_curve import build_target_interpolator
 
 sys.dont_write_bytecode = True
 
@@ -14,7 +15,7 @@ class PSOCalibrator:
         self.abaqus_cmd_path = 'C:/SIMULIA/Abaqus/Commands/abaqus.bat'
         self.config_file_path = os.path.join('backend', 'model_config', 'model_config.json')
         self.data_file_path = None
-        self.target_profile_path = os.path.join('calibration', 'config', 'target_curve.pkl')
+        self.target_profile_path = os.path.join('calibration', 'config', 'target_curve.csv')
         self.calibration_config_path = os.path.join('calibration', 'config', 'calibration_config.json')
         
         self.target_spline = self._load_target_profile()
@@ -22,21 +23,36 @@ class PSOCalibrator:
         self._load_calibration_config()
 
     def _load_target_profile(self):
-        with open(self.target_profile_path, 'rb') as f:
-            return pickle.load(f)
+        return build_target_interpolator(self.target_profile_path)
 
     def _load_calibration_config(self):
         with open(self.calibration_config_path, 'r') as f:
             config = json.load(f)
 
-        self.bounds_min = np.array(config['pso_optimization_bounds']['bounds_min'])
-        self.bounds_max = np.array(config['pso_optimization_bounds']['bounds_max'])
+        bounds_config = config['pso_optimization_bounds']
+        self.parameter_names = list(bounds_config.keys())
+        self.bounds_min = np.array([bounds_config[name]['min'] for name in self.parameter_names], dtype=float)
+        self.bounds_max = np.array([bounds_config[name]['max'] for name in self.parameter_names], dtype=float)
         self.bounds = (self.bounds_min, self.bounds_max)
         
         self.options = config['pso_hyperparameters']
-        self.dimensions = config['dimensions']
+        self.dimensions = len(bounds_config)
         self.n_particles = config['n_particles']
         self.n_iterations = config['n_iterations']
+
+    def _set_nested_model_value(self, container, parameter_name, value):
+        if not isinstance(container, dict):
+            return False
+
+        if parameter_name in container and not isinstance(container[parameter_name], dict):
+            container[parameter_name] = float(value)
+            return True
+
+        for nested_value in container.values():
+            if isinstance(nested_value, dict) and self._set_nested_model_value(nested_value, parameter_name, value):
+                return True
+
+        return False
 
     def _update_model_config(self, particle, particle_index, iteration_index):
         with open(self.config_file_path, 'r') as file:
@@ -48,14 +64,10 @@ class PSOCalibrator:
         if iteration_index is not None:
             config['lspModel']['modelBuilder']['iterationNumber'] = iteration_index
 
-        config['lspModel']['modelBuilder']['material']['johnsonCook']['a'] = float(particle[0])
-        config['lspModel']['modelBuilder']['material']['johnsonCook']['b'] = float(particle[1])
-        config['lspModel']['modelBuilder']['material']['johnsonCook']['n'] = float(particle[2])
-        config['lspModel']['modelBuilder']['material']['johnsonCook']['c'] = float(particle[3])
-        config['lspModel']['modelBuilder']['pulse']['p0'] = float(particle[4])
-        config['lspModel']['modelBuilder']['pulse']['pMax'] = float(particle[5])
-        config['lspModel']['modelBuilder']['pulse']['rMax'] = float(particle[6])
-        config['lspModel']['modelBuilder']['pulse']['timeMax'] = float(particle[7])
+        model_builder = config['lspModel']['modelBuilder']
+        for parameter_name, parameter_value in zip(self.parameter_names, particle):
+            if not self._set_nested_model_value(model_builder, parameter_name, parameter_value):
+                raise KeyError(f"Parameter '{parameter_name}' not found in model configuration.")
         
         with open(self.config_file_path, 'w') as file:
             json.dump(config, file, indent=4)

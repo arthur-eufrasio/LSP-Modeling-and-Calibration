@@ -1,16 +1,17 @@
 import glob
 import json
 import os
-import pickle
 import re
 
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import numpy as np
 
+from calibration.target_curve import build_target_interpolator, load_target_curve
+
 
 DATA_GLOB = os.path.join("backend", "data", "data_i*_p*.json")
-TARGET_PKL = os.path.join("calibration", "config", "target_curve.pkl")
+TARGET_CSV = os.path.join("calibration", "config", "target_curve.csv")
 
 
 def _extract_indices_from_name(file_name):
@@ -18,11 +19,6 @@ def _extract_indices_from_name(file_name):
     if not match:
         return None, None
     return int(match.group(1)), int(match.group(2))
-
-
-def _load_target_spline(path):
-    with open(path, "rb") as f:
-        return pickle.load(f)
 
 
 def _load_surface_profile(json_path):
@@ -37,7 +33,8 @@ def _load_surface_profile(json_path):
 
 
 def main():
-    target_spline = _load_target_spline(TARGET_PKL)
+    target_spline = build_target_interpolator(TARGET_CSV)
+    target_x, target_y = load_target_curve(TARGET_CSV)
     data_files = sorted(glob.glob(DATA_GLOB))
 
     if not data_files:
@@ -95,16 +92,18 @@ def main():
     # ==========================================
     # COMMON FORMATTING FUNCTION
     # ==========================================
-    x_min, x_max = min(all_x), max(all_x)
+    x_min = min(min(all_x), float(target_x.min()))
+    x_max = max(max(all_x), float(target_x.max()))
     y_min, y_max = min(all_y), max(all_y)
 
     x_target_plot = np.linspace(x_min, x_max, 400)
     y_target_plot = target_spline(x_target_plot)
-    y_target_min, y_target_max = min(y_target_plot), max(y_target_plot)
+    y_target_min, y_target_max = float(np.min(y_target_plot)), float(np.max(y_target_plot))
+    y_target_data_min, y_target_data_max = float(np.min(target_y)), float(np.max(target_y))
 
     # Add a buffer to the Y-axis so the curves don't touch the edges
-    y_min = min(y_min, y_target_min) - 50
-    y_max = max(y_max, y_target_max) + 50
+    y_min = min(y_min, y_target_min, y_target_data_min) - 50
+    y_max = max(y_max, y_target_max, y_target_data_max) + 50
 
     def apply_common_formatting(fig, ax):
         # Fix the layout padding so the title doesn't get cut
@@ -130,7 +129,7 @@ def main():
         color="black",
         linewidth=2.5,
         linestyle="--",
-        label="Target (PKL)",
+        label="Target (CSV)",
     )
 
     max_particles = max(len(particles) for particles in iterations_data.values())
@@ -202,7 +201,7 @@ def main():
         color="black",
         linewidth=2.5,
         linestyle="--",
-        label="Target (PKL)",
+        label="Target (CSV)",
     )
 
     ax_best.plot(

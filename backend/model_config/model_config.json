@@ -37,7 +37,7 @@
             },
             "step": {
                 "durationShotPhase": 6e-07,
-                "durationRestPhase": 3e-05,
+                "durationRestPhase": 5e-05,
                 "totalFrames": 20
             },
             "mesh": {

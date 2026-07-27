@@ -37,7 +37,7 @@ This project solves the classic bottleneck of integrating modern Machine Learnin
 2.  **Configuration Injection:** The optimizer updates the `backend/model_config/model_config.json` file for each particle.
 3.  **Headless Simulation:** Abaqus CAE is invoked via a background subprocess (`noGUI`). It reads the JSON, generates the axisymmetric geometry, applies partitioned meshing and infinite boundary elements (`CINAX4`), and submits the explicit dynamic job.
 4.  **Data Extraction:** Once the dynamic impact and the subsequent rest phase (relaxation) are complete, the script extracts the surface and depth residual stress profiles from the `.odb` file directly into a new JSON file.
-5.  **Cost Evaluation:** The external Python reads the output, compares it against the `target_curve.pkl` using MSE, and updates the swarm's velocity and position vectors for the next generation.
+5.  **Cost Evaluation:** The external Python reads the output, compares it against the `target_curve.csv` using MSE, and updates the swarm's velocity and position vectors for the next generation.
 
 ### Subprocess Deadlock Prevention
 Combining heuristic optimization with Finite Element Analysis (FEA) often leads to system crashes when evaluating "bad" particles (e.g., extremely low yield stress combined with high laser pressure). 
@@ -57,7 +57,7 @@ Combining heuristic optimization with Finite Element Analysis (FEA) often leads 
     * `model_config/`: Contains the bridge configuration file (`model_config.json`).
 * `calibration/` - **The External Environment (Modern Python)**
     * `calibrator.py`: Contains the PSO algorithm logic and subprocess management.
-    * `config/`: Holds `calibration_config.json` (PSO bounds and hyperparameters) and the target experimental data (`target_curve.pkl`).
+    * `config/`: Holds `calibration_config.json` (PSO bounds and hyperparameters) and the target experimental data (`target_curve.csv`).
 * `utilities/` - Contains the `clean_files.py` script to clear cache, `.lck`, and `.rpy` files.
 * `plot.py` - Renders results, creating static plots and `.gif` animations of the calibration.
 * `run_calibration.py` - The main trigger to start the closed-loop optimization.

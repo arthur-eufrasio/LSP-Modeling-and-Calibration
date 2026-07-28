@@ -113,11 +113,11 @@ class PSOCalibrator:
                 data = json.load(f)
             
             data_key_name = f"lspModel_i{self.current_iteration}_p{particle_index}"
-            surface_data = data[data_key_name]["surface"]
-            surface_data_x = np.array([point[0] for point in surface_data])
-            simulated_stresses = np.array([point[1] for point in surface_data])
+            depth_data = data[data_key_name]["depth"]
+            depth_data_y = np.array([point[0] for point in depth_data])
+            simulated_stresses = np.array([point[1] for point in depth_data])
             
-            target_stresses = self.target_spline(surface_data_x)
+            target_stresses = self.target_spline(depth_data_y)
             
             mse = np.mean((simulated_stresses - target_stresses)**2)
             return mse

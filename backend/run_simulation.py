@@ -181,7 +181,7 @@ class Simulation:
         self.log("      - Creating partitions...", self.logFilePath)
         geo_params = self.modelBuilder['geometry']
         height_finite_cube = geo_params['heightFiniteCube']
-        side_interest_region = geo_params['lenghtInterestRegion']
+        side_interest_region = geo_params['lengthInterestRegion']
         height_interest_region = geo_params['heightInterestRegion']
         infinite_border = geo_params['infiniteBorder']
 
@@ -233,7 +233,7 @@ class Simulation:
                 (0.0, total_height, 0.0, p0), 
                 (rMax, total_height, 0.0, pMax), 
                 (r, total_height, 0.0, 0.0),
-                (geo_params['lenghtInterestRegion'], total_height, 0.0, 0.0)
+                (geo_params['lengthInterestRegion'], total_height, 0.0, 0.0)
                 ))
         
         self.model.TabularAmplitude(

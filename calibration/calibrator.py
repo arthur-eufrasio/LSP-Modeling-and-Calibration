@@ -40,6 +40,9 @@ class PSOCalibrator:
         self.n_particles = config['n_particles']
         self.n_iterations = config['n_iterations']
 
+        self.w_max = config['w_max']
+        self.w_min = config['w_min']
+
     def _set_nested_model_value(self, container, parameter_name, value):
         if not isinstance(container, dict):
             return False
@@ -127,10 +130,13 @@ class PSOCalibrator:
             return 1e6  
 
     def _objective_function(self, particles):
+        current_w = self.w_max - ((self.w_max - self.w_min) * (self.current_iteration / self.n_iterations))
+        self.optimizer.options['w'] = current_w
+
         n_particles = particles.shape[0]
         costs = np.zeros(n_particles)
         
-        print(f"\n=== Iteration {self.current_iteration + 1} ===")
+        print(f"\n=== Iteration {self.current_iteration + 1}/{self.n_iterations} (w = {current_w:.4f}) ===")
         for i in range(n_particles):
             print(f"--- Evaluating Particle {i + 1}/{n_particles} ---")
             costs[i] = self._evaluate_particle(particles[i], i)
@@ -142,7 +148,7 @@ class PSOCalibrator:
 
     def run(self):
         print("Starting PSO Calibration...")
-        optimizer = ps.single.GlobalBestPSO(
+        self.optimizer = ps.single.GlobalBestPSO(
             n_particles=self.n_particles, 
             dimensions=self.dimensions, 
             options=self.options, 
@@ -151,7 +157,7 @@ class PSOCalibrator:
 
         self.current_iteration = 0
 
-        best_cost, best_pos = optimizer.optimize(
+        best_cost, best_pos = self.optimizer.optimize(
             self._objective_function, 
             iters=self.n_iterations
         )

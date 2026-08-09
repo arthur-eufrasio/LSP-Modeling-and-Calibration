@@ -12,6 +12,8 @@
     "c2": 1.5,
     "w": 0.75
   },
-  "n_particles": 15,
+  "w_max": 0.9,
+  "w_min": 0.2,
+  "n_particles": 30,
   "n_iterations": 500
 }

@@ -4,8 +4,9 @@ import subprocess
 import numpy as np
 import pyswarms as ps
 import sys
+from scipy.interpolate import interp1d
 
-from calibration.target_curve import build_target_interpolator
+from calibration.target_curve import load_target_curve
 
 sys.dont_write_bytecode = True
 
@@ -18,12 +19,12 @@ class PSOCalibrator:
         self.target_profile_path = os.path.join('calibration', 'config', 'target_curve.csv')
         self.calibration_config_path = os.path.join('calibration', 'config', 'calibration_config.json')
         
-        self.target_spline = self._load_target_profile()
+        self.target_coords, self.target_stresses = self._load_target_profile()
         
         self._load_calibration_config()
 
     def _load_target_profile(self):
-        return build_target_interpolator(self.target_profile_path)
+        return load_target_curve(self.target_profile_path)
 
     def _load_calibration_config(self):
         with open(self.calibration_config_path, 'r') as f:
@@ -120,9 +121,28 @@ class PSOCalibrator:
             depth_data_y = np.array([point[0] for point in depth_data])
             simulated_stresses = np.array([point[1] for point in depth_data])
             
-            target_stresses = self.target_spline(depth_data_y)
+            sim_interp = interp1d(
+                depth_data_y, 
+                simulated_stresses, 
+                kind='linear', 
+                bounds_error=False, 
+                fill_value=(simulated_stresses[0], simulated_stresses[-1]),
+                assume_sorted=True
+            )
             
-            mse = np.mean((simulated_stresses - target_stresses)**2)
+            simulated_averages = []
+            prev_depth = 0.0
+            
+            for current_depth in self.target_coords:
+                eval_points = np.linspace(prev_depth, current_depth, 50)
+                avg_simulated_stress = np.mean(sim_interp(eval_points))
+                
+                simulated_averages.append(avg_simulated_stress)
+                prev_depth = current_depth
+                
+            simulated_averages = np.array(simulated_averages)
+            
+            mse = np.mean((simulated_averages - self.target_stresses)**2)
             return mse
             
         except Exception as e:

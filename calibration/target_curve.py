@@ -1,13 +1,9 @@
 import csv
 from pathlib import Path
-
 import numpy as np
-from scipy.interpolate import interp1d
-
 
 _X_HEADERS = ("coord", "coords", "coordinate", "coordinates", "depth")
 _Y_HEADERS = ("residual_stress", "rs", "stress")
-
 
 def load_target_curve(csv_path):
     csv_path = Path(csv_path)
@@ -41,6 +37,7 @@ def load_target_curve(csv_path):
     if coords.size < 2:
         raise ValueError(f"Target curve CSV needs at least two points: {csv_path}")
 
+    # Ensure the data is sorted by depth
     order = np.argsort(coords)
     coords = coords[order]
     stresses = stresses[order]
@@ -50,15 +47,3 @@ def load_target_curve(csv_path):
     stresses = stresses[unique_indices]
 
     return coords, stresses
-
-
-def build_target_interpolator(csv_path):
-    coords, stresses = load_target_curve(csv_path)
-    return interp1d(
-        coords,
-        stresses,
-        kind="linear",
-        bounds_error=False,
-        fill_value=(stresses[0], stresses[-1]),
-        assume_sorted=True,
-    )

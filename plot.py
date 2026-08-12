@@ -15,8 +15,10 @@ except ImportError:
         return data[:, 0], data[:, 1]
 
 
-def calculate_file_mse(file_path, target_coords, target_stresses):
-    """Calculates Mean Squared Error (MSE) for a single JSON data file."""
+def process_file_data(file_path, target_coords, target_stresses):
+    """
+    Calculates Mean Squared Error (MSE) and retrieves the depth/stress profiles.
+    """
     with open(file_path, 'r') as f:
         data = json.load(f)
 
@@ -51,7 +53,8 @@ def calculate_file_mse(file_path, target_coords, target_stresses):
 
     # Mean Squared Error calculation
     mse = np.mean((simulated_averages - target_stresses) ** 2)
-    return mse
+    
+    return mse, depth_data_y, simulated_stresses
 
 
 def main():
@@ -74,12 +77,14 @@ def main():
     print(f"Processing {len(json_files)} data files...")
     for file_path in json_files:
         try:
-            mse = calculate_file_mse(file_path, target_coords, target_stresses)
+            mse, depth_y, sim_stresses = process_file_data(file_path, target_coords, target_stresses)
             file_name = os.path.basename(file_path)
             results.append({
                 'file_name': file_name,
                 'file_path': file_path,
-                'mse': mse
+                'mse': mse,
+                'depth_y': depth_y,
+                'sim_stresses': sim_stresses
             })
         except Exception as e:
             print(f"[WARNING] Could not process {file_path}: {e}")
@@ -87,10 +92,11 @@ def main():
     # Sort results by MSE ascending (lowest error first)
     results.sort(key=lambda x: x['mse'])
 
-    # Select Top 10 lowest MSE
+    # Select Top 10 and Top 5 datasets
     top_10 = results[:10]
+    top_5 = results[:5]
 
-    # Print terminal output
+    # Print terminal ranking output
     print("\n" + "=" * 50)
     print(" TOP 10 LOWEST MSE RANKING ".center(50, "="))
     print("=" * 50)
@@ -98,16 +104,22 @@ def main():
         print(f"Rank {rank:2d} | MSE: {item['mse']:12.4f} | File: {item['file_name']}")
     print("=" * 50 + "\n")
 
-    # Plot top 10 ranking
+    # Figure 1: Top 10 MSE Ranking Bar Chart
     plot_ranking(top_10)
+
+    # Figure 2: Target Curve vs Top 5 Simulated Profiles
+    plot_profiles(target_coords, target_stresses, top_5)
+
+    # Display both figures simultaneously
+    plt.show()
 
 
 def plot_ranking(top_10_results):
-    """Generates a bar chart ranking the top 10 models with the lowest MSE."""
+    """Generates Figure 1: Horizontal bar chart ranking the top 10 models with lowest MSE."""
+    plt.figure(1, figsize=(10, 6))
     labels = [item['file_name'].replace('.json', '') for item in top_10_results]
     mse_values = [item['mse'] for item in top_10_results]
 
-    plt.figure(figsize=(12, 6))
     bars = plt.barh(labels[::-1], mse_values[::-1], color='navy', edgecolor='black', alpha=0.8)
 
     plt.xlabel('Mean Squared Error (MSE)', fontsize=12)
@@ -115,7 +127,7 @@ def plot_ranking(top_10_results):
     plt.title('Top 10 Lowest MSE Models', fontsize=14, fontweight='bold')
     plt.grid(axis='x', linestyle='--', alpha=0.6)
 
-    # Add MSE text labels next to each bar
+    # Add numerical labels next to each bar
     for bar in bars:
         width = bar.get_width()
         plt.text(
@@ -129,7 +141,30 @@ def plot_ranking(top_10_results):
         )
 
     plt.tight_layout()
-    plt.show()
+
+
+def plot_profiles(target_coords, target_stresses, top_5_results):
+    """Generates Figure 2: Target profile vs Top 5 best simulated stress curves."""
+    plt.figure(2, figsize=(10, 6))
+
+    # Plot target curve
+    plt.plot(target_coords, target_stresses, 'k--', linewidth=2.5, label='Target Profile')
+
+    # Color palette for top 5 curves
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd']
+
+    # Plot top 5 simulated curves
+    for idx, item in enumerate(top_5_results):
+        file_label = item['file_name'].replace('.json', '')
+        legend_label = f"Rank {idx + 1}: {file_label} (MSE: {item['mse']:.2f})"
+        plt.plot(item['depth_y'], item['sim_stresses'], color=colors[idx], linewidth=1.8, label=legend_label)
+
+    plt.xlabel('Depth (mm)', fontsize=12)
+    plt.ylabel('Residual Stress (MPa)', fontsize=12)
+    plt.title('Target vs Top 5 Simulated Profiles', fontsize=14, fontweight='bold')
+    plt.legend(fontsize=10, loc='best')
+    plt.grid(True, linestyle='--', alpha=0.6)
+    plt.tight_layout()
 
 
 if __name__ == '__main__':

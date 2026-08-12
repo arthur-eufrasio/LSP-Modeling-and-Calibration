@@ -1,230 +1,136 @@
-import glob
-import json
 import os
-import re
-
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
+import json
+import glob
 import numpy as np
+import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d
 
-from calibration.target_curve import build_target_interpolator, load_target_curve
-
-
-DATA_GLOB = os.path.join("backend", "data", "data_i*_p*.json")
-TARGET_CSV = os.path.join("calibration", "config", "target_curve.csv")
-
-
-def _extract_indices_from_name(file_name):
-    match = re.search(r"data_i(\d+)_p(\d+)\.json$", file_name)
-    if not match:
-        return None, None
-    return int(match.group(1)), int(match.group(2))
+# Try importing the custom load_target_curve function from your project structure
+try:
+    from calibration.target_curve import load_target_curve
+except ImportError:
+    def load_target_curve(csv_path):
+        """Fallback CSV loader if module import is not available directly."""
+        data = np.loadtxt(csv_path, delimiter=',', skiprows=1)
+        return data[:, 0], data[:, 1]
 
 
-def _load_surface_profile(json_path):
-    with open(json_path, "r") as f:
+def calculate_file_mse(file_path, target_coords, target_stresses):
+    """Calculates Mean Squared Error (MSE) for a single JSON data file."""
+    with open(file_path, 'r') as f:
         data = json.load(f)
 
-    top_key = next(iter(data))
-    surface = data[top_key]["surface"]
-    x = np.array([point[0] for point in surface], dtype=float)
-    y = np.array([point[1] for point in surface], dtype=float)
-    return x, y
+    # Get the dynamic model key (e.g., 'lspModel_i0_p0')
+    model_key = list(data.keys())[0]
+    depth_data = data[model_key]["depth"]
+
+    depth_data_y = np.array([point[0] for point in depth_data])
+    simulated_stresses = np.array([point[1] for point in depth_data])
+
+    # Interpolate simulated stresses over depth
+    sim_interp = interp1d(
+        depth_data_y,
+        simulated_stresses,
+        kind='linear',
+        bounds_error=False,
+        fill_value=(simulated_stresses[0], simulated_stresses[-1]),
+        assume_sorted=True
+    )
+
+    # Calculate average stress per depth interval
+    simulated_averages = []
+    prev_depth = 0.0
+
+    for current_depth in target_coords:
+        eval_points = np.linspace(prev_depth, current_depth, 50)
+        avg_simulated_stress = np.mean(sim_interp(eval_points))
+        simulated_averages.append(avg_simulated_stress)
+        prev_depth = current_depth
+
+    simulated_averages = np.array(simulated_averages)
+
+    # Mean Squared Error calculation
+    mse = np.mean((simulated_averages - target_stresses) ** 2)
+    return mse
 
 
 def main():
-    target_spline = build_target_interpolator(TARGET_CSV)
-    target_x, target_y = load_target_curve(TARGET_CSV)
-    data_files = sorted(glob.glob(DATA_GLOB))
+    # Paths configuration
+    data_folder = os.path.join('backend', 'data')
+    target_profile_path = os.path.join('calibration', 'config', 'target_curve.csv')
 
-    if not data_files:
-        raise FileNotFoundError(f"No files found in: {DATA_GLOB}")
+    # Load target reference curve
+    target_coords, target_stresses = load_target_curve(target_profile_path)
 
-    iterations_data = {}
-    all_x = []
-    all_y = []
-    
-    best_profile = None
-    best_mse = float("inf")
+    # Retrieve all JSON data files
+    json_files = glob.glob(os.path.join(data_folder, '*.json'))
 
-    # Load data and find the best profile overall
-    for file_path in data_files:
-        file_name = os.path.basename(file_path)
-        iteration, particle = _extract_indices_from_name(file_name)
+    if not json_files:
+        print(f"No JSON files found in directory '{data_folder}'.")
+        return
 
-        if iteration is None:
-            continue
+    results = []
 
-        x, y = _load_surface_profile(file_path)
-        y_target = target_spline(x)
-        mse = float(np.mean((y - y_target) ** 2))
+    print(f"Processing {len(json_files)} data files...")
+    for file_path in json_files:
+        try:
+            mse = calculate_file_mse(file_path, target_coords, target_stresses)
+            file_name = os.path.basename(file_path)
+            results.append({
+                'file_name': file_name,
+                'file_path': file_path,
+                'mse': mse
+            })
+        except Exception as e:
+            print(f"[WARNING] Could not process {file_path}: {e}")
 
-        profile_data = {
-            "particle": particle,
-            "iteration": iteration,
-            "x": x,
-            "y": y,
-            "mse": mse,
-        }
+    # Sort results by MSE ascending (lowest error first)
+    results.sort(key=lambda x: x['mse'])
 
-        if iteration not in iterations_data:
-            iterations_data[iteration] = []
+    # Select Top 10 lowest MSE
+    top_10 = results[:10]
 
-        iterations_data[iteration].append(profile_data)
+    # Print terminal output
+    print("\n" + "=" * 50)
+    print(" TOP 10 LOWEST MSE RANKING ".center(50, "="))
+    print("=" * 50)
+    for rank, item in enumerate(top_10, 1):
+        print(f"Rank {rank:2d} | MSE: {item['mse']:12.4f} | File: {item['file_name']}")
+    print("=" * 50 + "\n")
 
-        # Track the absolute best particle
-        if mse < best_mse:
-            best_mse = mse
-            best_profile = profile_data
+    # Plot top 10 ranking
+    plot_ranking(top_10)
 
-        all_x.extend(x)
-        all_y.extend(y)
 
-    if not iterations_data or best_profile is None:
-        raise RuntimeError("Could not load valid profiles.")
+def plot_ranking(top_10_results):
+    """Generates a bar chart ranking the top 10 models with the lowest MSE."""
+    labels = [item['file_name'].replace('.json', '') for item in top_10_results]
+    mse_values = [item['mse'] for item in top_10_results]
 
-    sorted_iterations = sorted(iterations_data.keys())
-    
-    # Visual offset: if files start at i=0, display them starting at 1
-    iter_offset = 1 if sorted_iterations[0] == 0 else 0
-    particle_offset = 1 
+    plt.figure(figsize=(12, 6))
+    bars = plt.barh(labels[::-1], mse_values[::-1], color='navy', edgecolor='black', alpha=0.8)
 
-    # ==========================================
-    # COMMON FORMATTING FUNCTION
-    # ==========================================
-    x_min = min(min(all_x), float(target_x.min()))
-    x_max = max(max(all_x), float(target_x.max()))
-    y_min, y_max = min(all_y), max(all_y)
+    plt.xlabel('Mean Squared Error (MSE)', fontsize=12)
+    plt.ylabel('Particle Data File', fontsize=12)
+    plt.title('Top 10 Lowest MSE Models', fontsize=14, fontweight='bold')
+    plt.grid(axis='x', linestyle='--', alpha=0.6)
 
-    x_target_plot = np.linspace(x_min, x_max, 400)
-    y_target_plot = target_spline(x_target_plot)
-    y_target_min, y_target_max = float(np.min(y_target_plot)), float(np.max(y_target_plot))
-    y_target_data_min, y_target_data_max = float(np.min(target_y)), float(np.max(target_y))
+    # Add MSE text labels next to each bar
+    for bar in bars:
+        width = bar.get_width()
+        plt.text(
+            width + (max(mse_values) * 0.01),
+            bar.get_y() + bar.get_height() / 2,
+            f'{width:.4f}',
+            va='center',
+            ha='left',
+            fontsize=10,
+            fontweight='bold'
+        )
 
-    # Add a buffer to the Y-axis so the curves don't touch the edges
-    y_min = min(y_min, y_target_min, y_target_data_min) - 50
-    y_max = max(y_max, y_target_max, y_target_data_max) + 50
-
-    def apply_common_formatting(fig, ax):
-        # Fix the layout padding so the title doesn't get cut
-        fig.subplots_adjust(top=0.88, bottom=0.12, left=0.1, right=0.95)
-        
-        ax.axhline(0, color="black", linewidth=0.8)
-        # Lock limits so both plots show the exact same window frame
-        ax.set_xlim(x_min, x_max)
-        ax.set_ylim(y_min, y_max)
-        ax.set_xlabel("Distance (mm)")
-        ax.set_ylabel("Residual Stress (MPa)")
-        ax.grid(True, linestyle=":", alpha=0.7)
-
-    # ==========================================
-    # PART 1: ANIMATION OF ALL ITERATIONS
-    # ==========================================
-    fig_anim, ax_anim = plt.subplots(figsize=(11, 6))
-    apply_common_formatting(fig_anim, ax_anim)
-
-    ax_anim.plot(
-        x_target_plot,
-        y_target_plot,
-        color="black",
-        linewidth=2.5,
-        linestyle="--",
-        label="Target (CSV)",
-    )
-
-    max_particles = max(len(particles) for particles in iterations_data.values())
-    particle_lines = []
-    for _ in range(max_particles):
-        line, = ax_anim.plot([], [], alpha=0.8, linewidth=1.5, marker='.', markersize=4)
-        particle_lines.append(line)
-
-    title_text = ax_anim.set_title("", fontsize=14, fontweight="bold", pad=15)
-    ax_anim.legend(loc="upper right")
-
-    def update(frame_idx):
-        iteration = sorted_iterations[frame_idx]
-        particles = iterations_data[iteration]
-
-        display_iter = iteration + iter_offset
-        title_text.set_text(f"Evolution of Residual Stress - Iteration: {display_iter}")
-
-        for i, line in enumerate(particle_lines):
-            if i < len(particles):
-                p_data = particles[i]
-                display_part = p_data['particle'] + particle_offset
-                line.set_data(p_data["x"], p_data["y"])
-                line.set_label(f"Particle {display_part} | MSE: {p_data['mse']:.2f}")
-            else:
-                line.set_data([], [])
-                line.set_label("_nolegend_")
-
-        ax_anim.legend(loc="upper right")
-        return particle_lines + [title_text]
-
-    print("Generating animation...")
-    ani = FuncAnimation(
-        fig_anim, 
-        update, 
-        frames=len(sorted_iterations), 
-        interval=1200, 
-        repeat=False,
-        blit=False
-    )
-    
-    # Save the animation as a GIF
-    gif_filename = "calibration_evolution.gif"
-    print(f"Saving animation to '{gif_filename}'...")
-    ani.save(gif_filename, writer="pillow")
-    
-    print("Playing animation... Close the window to see the best profile result.")
-    plt.show() 
-
-    # ==========================================
-    # PART 2: STATIC PLOT FOR THE BEST PROFILE
-    # ==========================================
-    best_display_iter = best_profile['iteration'] + iter_offset
-    best_display_part = best_profile['particle'] + particle_offset
-    
-    print(
-        f"\nShowing Best Particle:\n"
-        f"  Iteration: {best_display_iter} (Internal Index: {best_profile['iteration']})\n"
-        f"  Particle:  {best_display_part} (Internal Index: {best_profile['particle']})\n"
-        f"  MSE:       {best_profile['mse']:.6f}\n"
-    )
-
-    fig_best, ax_best = plt.subplots(figsize=(11, 6))
-    apply_common_formatting(fig_best, ax_best)
-
-    ax_best.plot(
-        x_target_plot,
-        y_target_plot,
-        color="black",
-        linewidth=2.5,
-        linestyle="--",
-        label="Target (CSV)",
-    )
-
-    ax_best.plot(
-        best_profile["x"],
-        best_profile["y"],
-        color="red",
-        linewidth=2.8,
-        label=(
-            f"Best Particle (i={best_display_iter}, p={best_display_part}) | "
-            f"MSE: {best_profile['mse']:.4f}"
-        ),
-    )
-
-    ax_best.set_title("Best Residual Stress Profile Found", fontsize=14, fontweight="bold", pad=15)
-    ax_best.legend(loc="upper right")
-    
-    # Save the best profile as a PNG image
-    png_filename = "best_profile.png"
-    print(f"Saving best profile plot to '{png_filename}'...")
-    fig_best.savefig(png_filename, dpi=300, bbox_inches="tight")
-    
+    plt.tight_layout()
     plt.show()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

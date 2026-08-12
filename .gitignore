@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 
 backend/data/
+backend/data - Copy/
 backend/log/
 backend/files/
 

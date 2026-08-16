@@ -232,8 +232,7 @@ class Simulation:
             xyzPointData=(
                 (0.0, total_height, 0.0, p0), 
                 (rMax, total_height, 0.0, pMax), 
-                (r, total_height, 0.0, 0.0),
-                (geo_params['lengthInterestRegion'], total_height, 0.0, 0.0)
+                (r, total_height, 0.0, 0.0)
                 ))
         
         self.model.TabularAmplitude(

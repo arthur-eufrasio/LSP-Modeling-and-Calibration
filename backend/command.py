@@ -52,30 +52,31 @@ class Command:
         with open(log_file_path, "a") as f:
             f.write(message + "\n")
 
-    def _read_model_config(self):
-        config_file_path = os.path.join(self.config_dir_path, "model_config.json")
-        with open(config_file_path, 'r') as file:
-            config_data = json.load(file)
-            
-        return config_data
+    def _get_all_config_files(self):
+        """Retorna todos os arquivos com extensão .json na pasta model_config."""
+        files = [
+            os.path.join(self.config_dir_path, f)
+            for f in os.listdir(self.config_dir_path)
+            if f.endswith('.json')
+        ]
+        files.sort()
+        return files
 
-    def _run_simulation(self):
-        self.log("    [Simulation] Starting simulation.", self.log_file_path)
-        
-        config_data = self._read_model_config()
+    def _read_config_file(self, config_file_path):
+        with open(config_file_path, 'r') as file:
+            return json.load(file)
+
+    def _run_simulation(self, config_data, config_name):
+        self.log("    [Simulation] Starting simulation for: {}".format(config_name), self.log_file_path)
         simulation = Simulation(config_data, self.data_dir_path)
         simulation.run()
-        
-        self.log("    [Simulation] The simulation was completed.", self.log_file_path)
+        self.log("    [Simulation] Completed simulation for: {}".format(config_name), self.log_file_path)
 
-    def _run_extraction(self):
-        self.log("    [Extraction] Starting extraction.", self.log_file_path)
-        
-        config_data = self._read_model_config()
+    def _run_extraction(self, config_data, config_name):
+        self.log("    [Extraction] Starting extraction for: {}".format(config_name), self.log_file_path)
         extraction = OdbDataExtractor(config_data, self.data_dir_path)
         extraction.run()
-        
-        self.log("    [Extraction] The extraction was completed.", self.log_file_path)
+        self.log("    [Extraction] Completed extraction for: {}".format(config_name), self.log_file_path)
 
     def run(self):
         self._create_directories()
@@ -83,10 +84,24 @@ class Command:
             os.remove(self.log_file_path)
         
         self.log("[Command] Starting execution...", self.log_file_path)
-        
-        self._run_simulation()
-        self._run_extraction()  
-        self.log("[Command] End.", self.log_file_path)
+
+        config_files = self._get_all_config_files()
+
+        if not config_files:
+            self.log("[Command Warning] No .json configuration files found in model_config.", self.log_file_path)
+            return
+
+        for index, config_path in enumerate(config_files, start=1):
+            config_name = os.path.basename(config_path)
+            self.log("\n==================================================", self.log_file_path)
+            self.log("[Batch] Processing {}/{} -> {}".format(index, len(config_files), config_name), self.log_file_path)
+            self.log("==================================================", self.log_file_path)
+
+            config_data = self._read_config_file(config_path)
+            self._run_simulation(config_data, config_name)
+            self._run_extraction(config_data, config_name)
+
+        self.log("\n[Command] All simulations and extractions ended successfully.", self.log_file_path)
 
 if __name__ == "__main__":
     try:

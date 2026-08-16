@@ -29,11 +29,11 @@
         },
         "modelBuilder": {
             "pulse": {
-                "p0": 2186.177785391974,
-                "pMax": 2390.1307355830895,
-                "rMax": 0.7824743171655981,
-                "r": 1.0,
-                "timeMax": 2.7508219409755432e-08
+                "p0": 1000.0,
+                "pMax": 1237.0,
+                "rMax": 1.25,
+                "r": 2.5,
+                "timeMax": 35e-9
             },
             "step": {
                 "durationShotPhase": 6e-07,
@@ -53,13 +53,13 @@
             },
             "material": {
                 "johnsonCook": {
-                    "a": 350.005338440028,
-                    "b": 634.9248419456181,
-                    "n": 0.6246344957896315,
+                    "a": 347.0,
+                    "b": 615.7,
+                    "n": 0.619,
                     "m": 0,
                     "meltingTemp": 0,
                     "transitionTemp": 0,
-                    "c": 0.03425581754217916,
+                    "c": 0.025,
                     "epsilonDotZero": 0.005
                 },
                 "elastic": {
@@ -70,9 +70,7 @@
             },
             "job": {
                 "numCPUs": 8
-            },
-            "particleNumber": 20,
-            "iterationNumber": 112
+            }
         }
     }
 }

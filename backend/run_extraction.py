@@ -95,6 +95,10 @@ class OdbDataExtractor:
         
     def save_to_json(self):
         self.log("      - Saving data to JSON...", self.logFilePath)
+        
+        if not os.path.exists(self.pathDataDir):
+            os.makedirs(self.pathDataDir)
+            
         output_path = os.path.join(self.pathDataDir, "{}_stress_profile.json".format(self.odbName))
 
         with open(output_path, "w") as f:

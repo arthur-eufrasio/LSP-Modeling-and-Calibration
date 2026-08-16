@@ -18,6 +18,7 @@ class Command:
         self.files_dir_path = None
         self.files_inp_dir_path = None
         self.files_job_dir_path = None
+        self.files_cae_dir_path = None
 
     def _create_directories(self):
         self.backend_project_path = os.getenv("BACKEND_PROJECT_PATH")
@@ -28,26 +29,26 @@ class Command:
         self.files_dir_path = os.path.join(self.backend_project_path, "files")
         self.files_inp_dir_path = os.path.join(self.files_dir_path, "inp")
         self.files_job_dir_path = os.path.join(self.files_dir_path, "job")
+        self.files_cae_dir_path = os.path.join(self.files_dir_path, "cae")
 
-        if not os.path.exists(self.log_dir_path):
-            os.makedirs(self.log_dir_path)
+        directories = [
+            self.log_dir_path,
+            self.config_dir_path,
+            self.data_dir_path,
+            self.files_dir_path,
+            self.files_inp_dir_path,
+            self.files_job_dir_path,
+            self.files_cae_dir_path
+        ]
 
-        if not os.path.exists(self.config_dir_path):
-            os.makedirs(self.config_dir_path)
-
-        if not os.path.exists(self.data_dir_path):
-            os.makedirs(self.data_dir_path)
-
-        if not os.path.exists(self.files_dir_path):
-            os.makedirs(self.files_dir_path)
-
-        if not os.path.exists(self.files_inp_dir_path):
-            os.makedirs(self.files_inp_dir_path)
-
-        if not os.path.exists(self.files_job_dir_path):
-            os.makedirs(self.files_job_dir_path)
+        for directory in directories:
+            if not os.path.exists(directory):
+                os.makedirs(directory)
 
     def log(self, message, log_file_path):
+        log_dir = os.path.dirname(log_file_path)
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
         with open(log_file_path, "a") as f:
             f.write(message + "\n")
 

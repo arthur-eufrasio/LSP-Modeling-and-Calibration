@@ -390,10 +390,9 @@ class Simulation:
         job_path = os.path.join(files_path, 'job')
         cae_path = os.path.join(files_path, 'cae')
 
-        if not os.path.exists(inp_path):
-            os.makedirs(inp_path)
-        if not os.path.exists(job_path):
-            os.makedirs(job_path)
+        for path in [inp_path, job_path, cae_path]:
+            if not os.path.exists(path):
+                os.makedirs(path)
 
         os.chdir(inp_path)
         mdb.jobs['JobMock'].writeInput()
@@ -426,6 +425,10 @@ class Simulation:
         self.log("      - Job completed successfully.", self.logFilePath)
 
     def _modify_element_type(self, file_path, old_element, new_element):
+        file_dir = os.path.dirname(file_path)
+        if not os.path.exists(file_dir):
+            os.makedirs(file_dir)
+            
         with open(file_path, 'r') as f:
             content = f.read()
         

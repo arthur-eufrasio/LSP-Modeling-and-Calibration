@@ -38,7 +38,7 @@ if __name__ == "__main__":
     print("=== LSP: MODELO DE FABBRO (ÁGUA + ALUMÍNIO AERONÁUTICO) ===")
     
     # Execução para alpha = 0.10
-    res_10 = calculate_fabbro_lsp(alpha=0.125)
+    res_10 = calculate_fabbro_lsp(alpha=0.11)
     print(f"Impedância Reduzida (Z) : {res_10['Z_reduced']:.4e} g/(cm²·s)")
     print(f"Densidade de Potência (I0): {res_10['I0_GW_cm2']:.2f} GW/cm²")
     print(f"Pressão de Pico (α = 0.10): {res_10['P_peak_GPa']:.3f} GPa ({res_10['P_peak_MPa']:.1f} MPa)")

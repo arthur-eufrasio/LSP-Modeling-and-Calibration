@@ -1,3 +1,4 @@
+# -*- coding: mbcs -*-
 import sys
 import os
 import json

@@ -30,8 +30,8 @@
         "modelBuilder": {
             "pulse": {
                 "p0": 1000.0,
-                "pMax": 1237.0,
-                "rMax": 1.25,
+                "pMax": 1500.0,
+                "rMax": 2.0,
                 "r": 2.5,
                 "timeMax": 35e-9
             },

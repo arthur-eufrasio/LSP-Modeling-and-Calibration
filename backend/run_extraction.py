@@ -8,7 +8,7 @@ from odbAccess import openOdb
 class OdbDataExtractor:
     def __init__(self, model_config, path_data_dir):
         self.fullConfig = model_config
-        self.odbName = str(self.fullConfig.keys()[0])
+        self.odbName = str(list(self.fullConfig.keys())[0])
         self.modelBuilder = self.fullConfig[self.odbName]['modelBuilder']
         self.particleNumber = self.modelBuilder['particleNumber']
         self.iterationNumber = self.modelBuilder['iterationNumber']
@@ -17,6 +17,12 @@ class OdbDataExtractor:
         self.pathDataDir = path_data_dir
         self.backendPath = os.path.dirname(self.pathDataDir)
         self.logFilePath = os.path.join(self.backendPath, "log", "abaqus_log.txt")
+
+        log_dir = os.path.join(self.backendPath, "log")
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+        if not os.path.exists(self.pathDataDir):
+            os.makedirs(self.pathDataDir)
         
     def log(self, msg, log_file_path):
         log_dir = os.path.dirname(log_file_path)

@@ -2,7 +2,7 @@ import sys
 import os
 import json
 
-os.chdir(os.getenv("BACKEND_PROJECT_PATH"))
+os.chdir(os.environ["BACKEND_PROJECT_PATH"])
 sys.dont_write_bytecode = True
 
 from run_simulation import Simulation
@@ -16,36 +16,34 @@ class Command:
         self.config_dir_path = None
         self.data_dir_path = None
         self.files_dir_path = None
+        self.files_cae_dir_path = None
         self.files_inp_dir_path = None
         self.files_job_dir_path = None
 
     def _create_directories(self):
-        self.backend_project_path = os.getenv("BACKEND_PROJECT_PATH")
+        self.backend_project_path = os.environ["BACKEND_PROJECT_PATH"]
         self.log_dir_path = os.path.join(self.backend_project_path, "log")
         self.log_file_path = os.path.join(self.log_dir_path, "abaqus_log.txt")
         self.config_dir_path = os.path.join(self.backend_project_path, "model_config")
         self.data_dir_path = os.path.join(self.backend_project_path, "data")
         self.files_dir_path = os.path.join(self.backend_project_path, "files")
+        self.files_cae_dir_path = os.path.join(self.files_dir_path, "cae")
         self.files_inp_dir_path = os.path.join(self.files_dir_path, "inp")
         self.files_job_dir_path = os.path.join(self.files_dir_path, "job")
 
-        if not os.path.exists(self.log_dir_path):
-            os.makedirs(self.log_dir_path)
+        directories = [
+            self.log_dir_path,
+            self.config_dir_path,
+            self.data_dir_path,
+            self.files_dir_path,
+            self.files_cae_dir_path,
+            self.files_inp_dir_path,
+            self.files_job_dir_path
+        ]
 
-        if not os.path.exists(self.config_dir_path):
-            os.makedirs(self.config_dir_path)
-
-        if not os.path.exists(self.data_dir_path):
-            os.makedirs(self.data_dir_path)
-
-        if not os.path.exists(self.files_dir_path):
-            os.makedirs(self.files_dir_path)
-
-        if not os.path.exists(self.files_inp_dir_path):
-            os.makedirs(self.files_inp_dir_path)
-
-        if not os.path.exists(self.files_job_dir_path):
-            os.makedirs(self.files_job_dir_path)
+        for directory in directories:
+            if not os.path.exists(directory):
+                os.makedirs(directory)
 
     def log(self, message, log_file_path):
         with open(log_file_path, "a") as f:
@@ -94,7 +92,7 @@ if __name__ == "__main__":
     except Exception as e:
         import traceback
 
-        backend_project_path = os.getenv("BACKEND_PROJECT_PATH")
+        backend_project_path = os.environ["BACKEND_PROJECT_PATH"]
         log_dir = os.path.join(backend_project_path, "log")
         log_file_path = os.path.join(log_dir, "abaqus_log.txt")
 

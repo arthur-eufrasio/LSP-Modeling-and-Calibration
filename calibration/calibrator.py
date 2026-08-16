@@ -19,9 +19,24 @@ class PSOCalibrator:
         self.target_profile_path = os.path.join('calibration', 'config', 'target_curve.csv')
         self.calibration_config_path = os.path.join('calibration', 'config', 'calibration_config.json')
         
+        self._ensure_backend_directories()
         self.target_coords, self.target_stresses = self._load_target_profile()
-        
         self._load_calibration_config()
+
+    def _ensure_backend_directories(self):
+        backend_path = os.path.join(os.getcwd(), 'backend')
+        required_dirs = [
+            os.path.join(backend_path, 'data'),
+            os.path.join(backend_path, 'log'),
+            os.path.join(backend_path, 'files'),
+            os.path.join(backend_path, 'files', 'cae'),
+            os.path.join(backend_path, 'files', 'inp'),
+            os.path.join(backend_path, 'files', 'job'),
+            os.path.join(backend_path, 'model_config')
+        ]
+        for directory in required_dirs:
+            if not os.path.exists(directory):
+                os.makedirs(directory)
 
     def _load_target_profile(self):
         return load_target_curve(self.target_profile_path)
@@ -77,11 +92,16 @@ class PSOCalibrator:
             json.dump(config, file, indent=4)
 
     def _run_abaqus_simulation(self):
-        os.environ["BACKEND_PROJECT_PATH"] = os.path.join(os.getcwd(), "backend")
+        backend_path = os.path.join(os.getcwd(), "backend")
+        os.environ["BACKEND_PROJECT_PATH"] = backend_path
         abaqus_command = f'"{self.abaqus_cmd_path}" cae noGUI="backend/command.py"'
         
-        stdout_path = os.path.join(os.environ["BACKEND_PROJECT_PATH"], "log", "subprocess_stdout.log")
-        stderr_path = os.path.join(os.environ["BACKEND_PROJECT_PATH"], "log", "subprocess_stderr.log")
+        log_dir = os.path.join(backend_path, "log")
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+
+        stdout_path = os.path.join(log_dir, "subprocess_stdout.log")
+        stderr_path = os.path.join(log_dir, "subprocess_stderr.log")
 
         MAX_SIMULATION_TIME = 600 
 
@@ -113,6 +133,7 @@ class PSOCalibrator:
 
             data_file_name = f'data_i{self.current_iteration}_p{particle_index}.json'
             self.data_file_path = os.path.join('backend', 'data', data_file_name)
+            
             with open(self.data_file_path, 'r') as f:
                 data = json.load(f)
             
@@ -141,8 +162,16 @@ class PSOCalibrator:
                 prev_depth = current_depth
                 
             simulated_averages = np.array(simulated_averages)
-            
-            mse = np.mean((simulated_averages - self.target_stresses)**2)
+            mse = float(np.mean((simulated_averages - self.target_stresses)**2))
+
+            # Store parameters and MSE inside the particle JSON file
+            parameters_dict = {name: float(val) for name, val in zip(self.parameter_names, particle)}
+            data[data_key_name]["parameters"] = parameters_dict
+            data[data_key_name]["mse"] = mse
+
+            with open(self.data_file_path, 'w') as f:
+                json.dump(data, f, indent=4)
+
             return mse
             
         except Exception as e:

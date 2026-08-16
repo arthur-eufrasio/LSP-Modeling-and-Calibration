@@ -19,13 +19,19 @@ from abaqusConstants import *
 class Simulation:
     def __init__(self, model_config, path_data_dir):
         self.fullConfig = model_config
-        self.modelName = str(self.fullConfig.keys()[0])
+        self.modelName = str(list(self.fullConfig.keys())[0])
         self.modelBuilder = self.fullConfig[self.modelName]['modelBuilder']
         self.particleNumber = self.modelBuilder['particleNumber']
         self.iterationNumber = self.modelBuilder['iterationNumber']
         self.pathDataDir = path_data_dir
         self.backendPath = os.path.dirname(self.pathDataDir)
         self.logFilePath = os.path.join(self.backendPath, "log", "abaqus_log.txt")
+        
+        log_dir = os.path.join(self.backendPath, "log")
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+        if not os.path.exists(self.pathDataDir):
+            os.makedirs(self.pathDataDir)
         
         Mdb()
         session.journalOptions.setValues(replayGeometry=INDEX, recoverGeometry=INDEX)
@@ -392,10 +398,9 @@ class Simulation:
         job_path = os.path.join(files_path, 'job')
         cae_path = os.path.join(files_path, 'cae')
 
-        if not os.path.exists(inp_path):
-            os.makedirs(inp_path)
-        if not os.path.exists(job_path):
-            os.makedirs(job_path)
+        for path in (files_path, inp_path, job_path, cae_path):
+            if not os.path.exists(path):
+                os.makedirs(path)
 
         os.chdir(inp_path)
         mdb.jobs['JobMock'].writeInput()

@@ -50,7 +50,7 @@ ax_depth.set_xlabel('Depth (mm)')
 ax_depth.set_ylabel('Residual Stress S11 (MPa)')
 ax_depth.set_title('Depth Stress Profile (All Models)')
 ax_depth.grid(True, linestyle=':', alpha=0.7)
-ax_depth.legend(title="Models")
+ax_depth.legend()
 
 # --- Finalização: Gráfico de Superfície ---
 ax_surf.axhline(0, color='black', linewidth=1, linestyle=':')
@@ -58,7 +58,7 @@ ax_surf.set_xlabel('Radial Distance (mm)')
 ax_surf.set_ylabel('Residual Stress S11 (MPa)')
 ax_surf.set_title('Surface Stress Profile (All Models)')
 ax_surf.grid(True, linestyle=':', alpha=0.7)
-ax_surf.legend(title="Models")
+ax_surf.legend()
 
 plt.tight_layout()
 plt.show()

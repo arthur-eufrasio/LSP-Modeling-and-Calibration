@@ -418,9 +418,15 @@ class Simulation:
 
         del mdb.jobs['JobMock']
 
+        # Antes era fixo em 90%. Com varios workers rodando ao mesmo tempo,
+        # cada um pedindo ate 90% da RAM do sistema e uma receita pra estourar
+        # memoria. O calibrator agora escreve 'memoryPercent' no config,
+        # calculado como 80 / n_workers, entao cada job so reserva sua fatia.
+        memory_percent = self.modelBuilder['job'].get('memoryPercent', 90)
+
         job = mdb.Job(activateLoadBalancing=False, atTime=None, contactPrint=OFF, 
             description='', echoPrint=OFF, explicitPrecision=SINGLE, historyPrint=OFF, 
-            memory=90, memoryUnits=PERCENTAGE, model=self.modelName + '_infinite', modelPrint=OFF, 
+            memory=memory_percent, memoryUnits=PERCENTAGE, model=self.modelName + '_infinite', modelPrint=OFF, 
             multiprocessingMode=DEFAULT, name=job_name, nodalOutputPrecision=SINGLE, 
             numCpus=num_cpus, numDomains=num_cpus, parallelizationMethodExplicit=DOMAIN, queue=None, 
             resultsFormat=ODB, scratch='', type=ANALYSIS, userSubroutine='', waitHours=

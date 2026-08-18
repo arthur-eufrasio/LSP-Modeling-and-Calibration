@@ -17,5 +17,5 @@
   "w_max": 0.7,
   "w_min": 0.2,
   "n_particles": 20,
-  "n_iterations": 200
+  "n_iterations": 3
 }

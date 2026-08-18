@@ -69,7 +69,8 @@
                 "density": 2.77e-09
             },
             "job": {
-                "numCPUs": 8
+                "numCPUs": 1,
+                "memoryPercent": 15
             }
         }
     }

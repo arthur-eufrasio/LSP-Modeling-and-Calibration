@@ -1,15 +1,18 @@
 # backend/command.py
+# -*- coding: mbcs -*-
 import sys
 import os
 import json
 
-# 1. Garante que o diretório 'backend' esteja no sys.path
-current_script_dir = os.path.dirname(os.path.abspath(__file__))
-if current_script_dir not in sys.path:
-    sys.path.insert(0, current_script_dir)
+# 1. Recupera caminhos via variáveis de ambiente
+# (No Abaqus CAE noGUI, __file__ não existe no escopo global)
+backend_project_path = os.environ.get("BACKEND_PROJECT_PATH", os.getcwd())
+backend_source_dir = os.environ.get("BACKEND_SOURCE_DIR", os.path.abspath("backend"))
 
-# 2. Muda o diretório para o slot isolado
-backend_project_path = os.environ.get("BACKEND_PROJECT_PATH", current_script_dir)
+if backend_source_dir not in sys.path:
+    sys.path.insert(0, backend_source_dir)
+
+# 2. Muda o diretório de trabalho para o slot isolado
 os.chdir(backend_project_path)
 sys.dont_write_bytecode = True
 

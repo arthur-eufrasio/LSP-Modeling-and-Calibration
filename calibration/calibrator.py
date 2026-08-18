@@ -126,12 +126,14 @@ class PSOCalibrator:
 
     def _run_abaqus_simulation(self, slot_id):
         backend_path = self.slot_paths[slot_id]
-        command_script_path = os.path.abspath(os.path.join('backend', 'command.py'))
+        backend_source_dir = os.path.abspath('backend')
+        command_script_path = os.path.join(backend_source_dir, 'command.py')
 
         env = os.environ.copy()
         env["BACKEND_PROJECT_PATH"] = backend_path
+        env["BACKEND_SOURCE_DIR"] = backend_source_dir
+        env["PYTHONPATH"] = backend_source_dir + os.pathsep + os.getcwd() + os.pathsep + env.get("PYTHONPATH", "")
 
-        # Passa o caminho absoluto do script command.py
         abaqus_command = f'"{self.abaqus_cmd_path}" cae noGUI="{command_script_path}"'
 
         log_dir = os.path.join(backend_path, "log")
@@ -146,7 +148,7 @@ class PSOCalibrator:
                     abaqus_command,
                     shell=True,
                     check=True,
-                    cwd=backend_path,  # Isola os arquivos temporários dentro do slot
+                    cwd=backend_path,
                     stdout=out_file,
                     stderr=err_file,
                     text=True,
@@ -157,11 +159,27 @@ class PSOCalibrator:
             print(f"[WARNING][slot {slot_id}] Abaqus excedeu {MAX_SIMULATION_TIME}s. Encerrando.")
             raise RuntimeError("Simulation timed out due to severe element distortion or hanging.")
         except subprocess.CalledProcessError as e:
-            print(f"[ERROR][slot {slot_id}] Abaqus falhou com codigo {e.returncode}.")
+            error_details = ""
+            if os.path.exists(stderr_path):
+                with open(stderr_path, "r") as f:
+                    error_details = f.read().strip()
+            if not error_details and os.path.exists(stdout_path):
+                with open(stdout_path, "r") as f:
+                    lines = f.readlines()
+                    error_details = "".join(lines[-10:]).strip()
+            
+            print(f"[ERROR][slot {slot_id}] Abaqus falhou com codigo {e.returncode}. Motivo: {error_details}")
             raise
         finally:
-            from utilities.clean_files import clean_files
-            clean_files(backend_path)
+            try:
+                from utilities.clean_files import clean_files
+                clean_files(backend_path)
+            except ImportError:
+                try:
+                    from clean_files import clean_files
+                    clean_files(backend_path)
+                except Exception:
+                    pass
 
     def _evaluate_particle(self, particle, particle_index, slot_id):
         try:

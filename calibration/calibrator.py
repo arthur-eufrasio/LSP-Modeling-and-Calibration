@@ -7,6 +7,7 @@ import concurrent.futures
 import numpy as np
 import pyswarms as ps
 import sys
+import time
 from scipy.interpolate import interp1d
 
 from calibration.target_curve import load_target_curve
@@ -265,6 +266,8 @@ class PSOCalibrator:
 
     def run(self):
         print("Starting PSO Calibration (parallel)...")
+        start_time = time.perf_counter()
+
         self.optimizer = ps.single.GlobalBestPSO(
             n_particles=self.n_particles,
             dimensions=self.dimensions,
@@ -279,6 +282,11 @@ class PSOCalibrator:
             iters=self.n_iterations
         )
 
+        total_time = time.perf_counter() - start_time
+        mins, secs = divmod(total_time, 60)
+        hours, mins = divmod(mins, 60)
+
         print("\n=== Calibration Finished ===")
         print(f"Best Cost (MSE): {best_cost}")
         print(f"Best Parameters: {best_pos}")
+        print(f"=== Time - {int(hours):02d}h {int(mins):02d}m {secs:05.2f}s ({total_time:.2f}s total) ===")

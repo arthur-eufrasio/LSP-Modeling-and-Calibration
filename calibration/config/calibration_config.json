@@ -1,12 +1,9 @@
 {
   "pso_optimization_bounds": {
-    "a": { "min": 170.0, "max": 520.0 },
-    "b": { "min": 300.0, "max": 920.0 },
-    "n": { "min": 0.30, "max": 0.92 },
     "c": { "min": 0.0125, "max": 0.0375 },
     "p0": { "min": 650.0, "max": 1940.0 },
     "pMax": { "min": 650.0, "max": 1940.0 },
-    "rMax": { "min": 1.25, "max": 2.2},
+    "rMax": { "min": 0.0, "max": 2.5},
     "timeMax": { "min": 1e-08, "max": 5e-08 }
   },
   "pso_hyperparameters": {
@@ -15,7 +12,7 @@
     "w": 0.7
   },
   "w_max": 0.7,
-  "w_min": 0.2,
+  "w_min": 0.7,
   "n_particles": 20,
-  "n_iterations": 3
+  "n_iterations": 200
 }

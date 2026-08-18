@@ -13,3 +13,5 @@ backend/files/
 *.lck
 *.txt
 *.rpy
+*.rpy.*
+

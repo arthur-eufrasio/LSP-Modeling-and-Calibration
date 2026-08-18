@@ -126,11 +126,13 @@ class PSOCalibrator:
 
     def _run_abaqus_simulation(self, slot_id):
         backend_path = self.slot_paths[slot_id]
+        command_script_path = os.path.abspath(os.path.join('backend', 'command.py'))
 
         env = os.environ.copy()
         env["BACKEND_PROJECT_PATH"] = backend_path
 
-        abaqus_command = f'"{self.abaqus_cmd_path}" cae noGUI="backend/command.py"'
+        # Passa o caminho absoluto do script command.py
+        abaqus_command = f'"{self.abaqus_cmd_path}" cae noGUI="{command_script_path}"'
 
         log_dir = os.path.join(backend_path, "log")
         stdout_path = os.path.join(log_dir, "subprocess_stdout.log")
@@ -144,6 +146,7 @@ class PSOCalibrator:
                     abaqus_command,
                     shell=True,
                     check=True,
+                    cwd=backend_path,  # Isola os arquivos temporários dentro do slot
                     stdout=out_file,
                     stderr=err_file,
                     text=True,
@@ -157,9 +160,6 @@ class PSOCalibrator:
             print(f"[ERROR][slot {slot_id}] Abaqus falhou com codigo {e.returncode}.")
             raise
         finally:
-            # ATENCAO: ajuste clean_files para limpar apenas o slot em questao,
-            # nao a pasta 'backend' central -- caso contrario um slot pode
-            # apagar arquivos que outro slot ainda esta usando.
             from utilities.clean_files import clean_files
             clean_files(backend_path)
 

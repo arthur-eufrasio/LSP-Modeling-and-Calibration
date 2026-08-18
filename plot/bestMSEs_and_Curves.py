@@ -3,7 +3,6 @@ import json
 import glob
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.interpolate import interp1d
 
 # Try importing the custom load_target_curve function from your project structure
 try:
@@ -15,44 +14,24 @@ except ImportError:
         return data[:, 0], data[:, 1]
 
 
-def process_file_data(file_path, target_coords, target_stresses):
+def load_file_data(file_path):
     """
-    Calculates Mean Squared Error (MSE) and retrieves the depth/stress profiles.
+    Extracts the precomputed MSE and depth/stress profile directly from the JSON.
     """
     with open(file_path, 'r') as f:
         data = json.load(f)
 
     # Get the dynamic model key (e.g., 'lspModel_i0_p0')
     model_key = list(data.keys())[0]
-    depth_data = data[model_key]["depth"]
+    model_content = data[model_key]
 
+    # Directly retrieve precomputed MSE
+    mse = model_content["mse"]
+
+    # Extract depth and stress profiles
+    depth_data = model_content["depth"]
     depth_data_y = np.array([point[0] for point in depth_data])
     simulated_stresses = np.array([point[1] for point in depth_data])
-
-    # Interpolate simulated stresses over depth
-    sim_interp = interp1d(
-        depth_data_y,
-        simulated_stresses,
-        kind='linear',
-        bounds_error=False,
-        fill_value=(simulated_stresses[0], simulated_stresses[-1]),
-        assume_sorted=True
-    )
-
-    # Calculate average stress per depth interval
-    simulated_averages = []
-    prev_depth = 0.0
-
-    for current_depth in target_coords:
-        eval_points = np.linspace(prev_depth, current_depth, 50)
-        avg_simulated_stress = np.mean(sim_interp(eval_points))
-        simulated_averages.append(avg_simulated_stress)
-        prev_depth = current_depth
-
-    simulated_averages = np.array(simulated_averages)
-
-    # Mean Squared Error calculation
-    mse = np.mean((simulated_averages - target_stresses) ** 2)
     
     return mse, depth_data_y, simulated_stresses
 
@@ -60,6 +39,9 @@ def process_file_data(file_path, target_coords, target_stresses):
 def main():
     # Paths configuration
     data_folder = os.path.join('backend', 'data')
+    if not os.path.exists(data_folder) and os.path.exists('data'):
+        data_folder = 'data'
+        
     target_profile_path = os.path.join('calibration', 'config', 'target_curve.csv')
 
     # Load target reference curve
@@ -77,7 +59,7 @@ def main():
     print(f"Processing {len(json_files)} data files...")
     for file_path in json_files:
         try:
-            mse, depth_y, sim_stresses = process_file_data(file_path, target_coords, target_stresses)
+            mse, depth_y, sim_stresses = load_file_data(file_path)
             file_name = os.path.basename(file_path)
             results.append({
                 'file_name': file_name,

@@ -4,52 +4,15 @@ import json
 import glob
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.interpolate import interp1d
-
-# Try importing target curve loader or use fallback
-try:
-    from calibration.target_curve import load_target_curve
-except ImportError:
-    def load_target_curve(csv_path):
-        """Fallback CSV loader if module import is not available directly."""
-        data = np.loadtxt(csv_path, delimiter=',', skiprows=1)
-        return data[:, 0], data[:, 1]
 
 
-def calculate_file_mse(file_path, target_coords, target_stresses):
-    """Calculates Mean Squared Error (MSE) for a single JSON data file."""
+def get_particle_mse(file_path):
+    """Reads the precomputed MSE directly from the JSON file."""
     with open(file_path, 'r') as f:
         data = json.load(f)
 
-    # Dynamically extract model key (e.g., 'lspModel_i0_p0')
     model_key = list(data.keys())[0]
-    depth_data = data[model_key]["depth"]
-
-    depth_data_y = np.array([point[0] for point in depth_data])
-    simulated_stresses = np.array([point[1] for point in depth_data])
-
-    # Interpolate simulated stresses over target depths
-    sim_interp = interp1d(
-        depth_data_y,
-        simulated_stresses,
-        kind='linear',
-        bounds_error=False,
-        fill_value=(simulated_stresses[0], simulated_stresses[-1]),
-        assume_sorted=True
-    )
-
-    simulated_averages = []
-    prev_depth = 0.0
-
-    for current_depth in target_coords:
-        eval_points = np.linspace(prev_depth, current_depth, 50)
-        avg_simulated_stress = np.mean(sim_interp(eval_points))
-        simulated_averages.append(avg_simulated_stress)
-        prev_depth = current_depth
-
-    simulated_averages = np.array(simulated_averages)
-    mse = np.mean((simulated_averages - target_stresses) ** 2)
-    return mse
+    return data[model_key]["mse"]
 
 
 def get_particle_files(data_folder, particle_id):
@@ -115,14 +78,9 @@ def plot_particle_evolution(particle_id, iterations, mse_values):
 
 def main(particle_id):
     data_folder = os.path.join('backend', 'data')
-    target_profile_path = os.path.join('calibration', 'config', 'target_curve.csv')
 
-    # Fallback check if backend/data doesn't exist directly
     if not os.path.exists(data_folder) and os.path.exists('data'):
         data_folder = 'data'
-
-    # Load reference target curve
-    target_coords, target_stresses = load_target_curve(target_profile_path)
 
     # Find files for selected particle
     particle_files = get_particle_files(data_folder, particle_id)
@@ -144,7 +102,7 @@ def main(particle_id):
 
     for item in particle_files:
         try:
-            mse = calculate_file_mse(item['file_path'], target_coords, target_stresses)
+            mse = get_particle_mse(item['file_path'])
             item['mse'] = mse
             iterations.append(item['iteration'])
             mse_values.append(mse)
@@ -159,7 +117,5 @@ def main(particle_id):
 
 
 if __name__ == '__main__':
-    # Change this global variable to set the target particle number
-    PARTICLE_ID = 7
-
+    PARTICLE_ID = 11
     main(PARTICLE_ID)

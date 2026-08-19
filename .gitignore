@@ -2,6 +2,8 @@
 __pycache__/
 *.pyc
 
+backend_slot_*/data 
+
 backend/data/
 abaqus_acis.log
 backend/log/abaqus_log.txt

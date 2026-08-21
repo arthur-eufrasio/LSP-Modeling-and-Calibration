@@ -19,7 +19,7 @@ from abaqusConstants import *
 class Simulation:
     def __init__(self, model_config, path_data_dir):
         self.fullConfig = model_config
-        self.modelName = str(self.fullConfig.keys()[0])
+        self.modelName = str(list(self.fullConfig.keys())[0])
         self.modelBuilder = self.fullConfig[self.modelName]['modelBuilder']
         self.pathDataDir = path_data_dir
         self.backendPath = os.path.dirname(self.pathDataDir)
@@ -235,8 +235,32 @@ class Simulation:
                 (r, total_height, 0.0, 0.0)
                 ))
         
+        raw_pulse_data = [
+            (0.0, 0.0),
+            (8.517, 0.925),
+            (10.095, 0.996),
+            (14.511, 0.978),
+            (23.344, 0.511),
+            (28.391, 0.409),
+            (34.700, 0.349),
+            (53.628, 0.253),
+            (71.924, 0.201),
+            (108.833, 0.121),
+            (164.038, 0.049),
+            (214.196, 0.003),
+            (220.0, 0.0)
+        ]
+
+        t_ref = 10.0
+        max_y = max(pt[1] for pt in raw_pulse_data)
+
+        amplitude_table = tuple(
+            ((x / t_ref) * timeMax, round(y / max_y, 3))
+            for x, y in raw_pulse_data
+        )
+        
         self.model.TabularAmplitude(
-            data=((0.0, 0.0), (timeMax / 2.0, 1.0), (timeMax, 0.0)), 
+            data=amplitude_table, 
             name='pulseLoadTemporalProfile',
             smooth=SOLVER_DEFAULT, 
             timeSpan=STEP

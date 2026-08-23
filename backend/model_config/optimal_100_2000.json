@@ -1,5 +1,5 @@
 {
-    "lspModel": {
+    "lspModel_triangular": {
         "odbExtractor": {
             "stepName": "RestPhase",
             "surfacePointPath": [
@@ -11,7 +11,7 @@
                 [
                     4.0,
                     null,
-                    0
+                    0.0
                 ]
             ],
             "depthPointPath": [
@@ -23,17 +23,17 @@
                 [
                     0.75,
                     -0.8,
-                    0
+                    0.0
                 ]
             ]
         },
         "modelBuilder": {
             "pulse": {
-                "p0": 1000.0,
-                "pMax": 1500.0,
-                "rMax": 2.0,
+                "p0": 1720.8084029080844,
+                "pMax": 1908.311535995393,
+                "rMax": 1.6967540717006186,
                 "r": 2.5,
-                "timeMax": 35e-9
+                "timeMax": 4.01939392056191e-08
             },
             "step": {
                 "durationShotPhase": 6e-07,
@@ -53,13 +53,13 @@
             },
             "material": {
                 "johnsonCook": {
-                    "a": 347.0,
-                    "b": 615.7,
-                    "n": 0.619,
+                    "a": 325.8999521770413,
+                    "b": 913.5171422597055,
+                    "n": 0.30705652023863184,
                     "m": 0,
                     "meltingTemp": 0,
                     "transitionTemp": 0,
-                    "c": 0.025,
+                    "c": 0.023780086411613673,
                     "epsilonDotZero": 0.005
                 },
                 "elastic": {
@@ -69,7 +69,7 @@
                 "density": 2.77e-09
             },
             "job": {
-                "numCPUs": 1
+                "numCPUs": 4
             }
         }
     }

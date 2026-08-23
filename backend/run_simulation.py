@@ -251,7 +251,7 @@ class Simulation:
             (220.0, 0.0)
         ]
 
-        t_ref = 10.0
+        t_ref = 20.0
         max_y = max(pt[1] for pt in raw_pulse_data)
 
         amplitude_table = tuple(

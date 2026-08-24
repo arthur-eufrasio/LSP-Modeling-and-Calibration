@@ -1,5 +1,5 @@
 {
-    "lspModel_triangular": {
+    "best_particle": {
         "odbExtractor": {
             "stepName": "RestPhase",
             "surfacePointPath": [
@@ -29,11 +29,11 @@
         },
         "modelBuilder": {
             "pulse": {
-                "p0": 1085.8576759306015,
-                "pMax": 1735.0296753682196,
-                "rMax": 1.7420196436669357,
+                "p0": 1046.6964418812831,
+                "pMax": 1717.552242683685,
+                "rMax": 1.7730151263257294,
                 "r": 2.5,
-                "timeMax": 4.738079303593991e-08
+                "timeMax": 3.687650636948751e-08
             },
             "step": {
                 "durationShotPhase": 6e-07,
@@ -53,13 +53,13 @@
             },
             "material": {
                 "johnsonCook": {
-                    "a": 215.5751601611264,
-                    "b": 573.853749062866,
-                    "n": 0.4490644352708053,
+                    "a": 214.1728427703249,
+                    "b": 657.7119771158548,
+                    "n": 0.5815840758599985,
                     "m": 0,
                     "meltingTemp": 0,
                     "transitionTemp": 0,
-                    "c": 0.026312384223775888,
+                    "c": 0.02075959698664728,
                     "epsilonDotZero": 0.005
                 },
                 "elastic": {

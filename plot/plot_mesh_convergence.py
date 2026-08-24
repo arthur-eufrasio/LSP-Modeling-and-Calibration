@@ -1,70 +1,114 @@
-import json
-import matplotlib.pyplot as plt
-import os
 import glob
+import json
+import os
+import re
+import matplotlib.pyplot as plt
 
-# Define the folder path instead of a specific file
-folder_path = "C:/Users/arthu/Desktop/arthur/git/LSP-Modeling-and-Calibration/backend/data/"
+# Global style configuration
+plt.rcParams.update(
+    {
+        "font.family": "serif",
+        "font.serif": ["Times New Roman", "DejaVu Serif", "Liberation Serif"],
+        "font.size": 10,
+        "axes.labelsize": 11,
+        "axes.titlesize": 11,
+        "xtick.labelsize": 9.5,
+        "ytick.labelsize": 9.5,
+        "legend.fontsize": 8.5,
+        "figure.titlesize": 12,
+        "svg.fonttype": "none",
+        "mathtext.fontset": "stix",
+    }
+)
 
-# Create the two figures and their axes BEFORE looping
-fig_depth, ax_depth = plt.subplots(figsize=(14, 10))
-fig_surf, ax_surf = plt.subplots(figsize=(14, 10))
 
-# Find all JSON files in the directory
-# This assumes your files end with '_model_stress_profile.json'
-search_pattern = os.path.join(folder_path, "*_model_stress_profile.json")
-json_files = glob.glob(search_pattern)
+def apply_legend_style(ax: plt.Axes, title: str = "Tamanho do Elemento") -> None:
+    """Applies standardized publication-quality styling to the legend."""
+    ax.legend(
+        title=title,
+        loc="best",
+        frameon=True,
+        edgecolor="black",
+        facecolor="white",
+        framealpha=0.9,
+        fancybox=False,
+        borderaxespad=1.2,
+        borderpad=0.6,
+    )
 
-# Sort the files so they plot (and appear in the legend) in numerical order
-json_files.sort()
 
-# Loop through every found JSON file
-for file_path in json_files:
-    # Extract filename, model name, and element size
-    filename = os.path.basename(file_path)
-    prefix = filename.split('_')[0]
-    model_name = prefix + '_model'
-    ele_size = int(prefix)
-    
-    # Load JSON data
-    with open(file_path, 'r') as file:
-        data = json.load(file)
-        
-    # Skip if the model name isn't in the JSON (safety check)
-    if model_name not in data:
-        print(f"Warning: {model_name} not found in {filename}. Skipping.")
-        continue
+def extract_element_size(filename: str) -> int | None:
+    """Extracts the integer element size immediately following 'mesh_' in the filename."""
+    match = re.search(r"mesh_(\d+)", filename)
+    if match:
+        return int(match.group(1))
+    return None
 
-    depth_data = data[model_name]["depth"]
-    surface_data = data[model_name]["surface"]
 
-    depth_x = [point[0] for point in depth_data]
-    depth_y = [point[1] for point in depth_data]
+def plot_depth_stress_profile(folder_path: str) -> None:
+    """Loads stress profiles from JSON files containing 'mesh_' and plots residual stress across depth."""
+    fig, ax = plt.subplots(figsize=(8.0, 4.5), dpi=300)
 
-    surface_x = [point[0] for point in surface_data]
-    surface_y = [point[1] for point in surface_data]
+    # Reference grid and zero line
+    ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.6, zorder=0)
+    ax.axhline(0, color="gray", linewidth=0.8, linestyle=":", zorder=1)
 
-    # Plot on Depth Figure (letting Matplotlib auto-assign colors)
-    ax_depth.plot(depth_x, depth_y, markersize=4, marker='o', linestyle='-', label=f'{ele_size} µm')
+    search_pattern = os.path.join(folder_path, "*mesh_*.json")
+    json_files = glob.glob(search_pattern)
 
-    # Plot on Surface Figure (letting Matplotlib auto-assign colors)
-    ax_surf.plot(surface_x, surface_y, markersize=4, marker='s', linestyle='--', label=f'{ele_size} µm')
+    # Filter files that contain the 'mesh_<number>' pattern
+    valid_files = [f for f in json_files if extract_element_size(os.path.basename(f)) is not None]
 
-# --- Finalize Figure 1: Depth ---
-ax_depth.axhline(0, color='black', linewidth=1)
-ax_depth.set_xlabel('Distance (mm)')
-ax_depth.set_ylabel('Residual Stress (MPa)')
-ax_depth.set_title('LSP Residual Stresses - Depth')
-ax_depth.legend(title="Element Size")
-ax_depth.grid(True, linestyle=':', alpha=0.7)
+    # Sort files numerically by extracted element size
+    valid_files.sort(key=lambda path: extract_element_size(os.path.basename(path)))
 
-# --- Finalize Figure 2: Surface ---
-ax_surf.axhline(0, color='black', linewidth=1)
-ax_surf.set_xlabel('Distance (mm)')
-ax_surf.set_ylabel('Residual Stress (MPa)')
-ax_surf.set_title('LSP Residual Stresses - Surface')
-ax_surf.legend(title="Element Size")
-ax_surf.grid(True, linestyle=':', alpha=0.7)
+    for file_path in valid_files:
+        filename = os.path.basename(file_path)
+        ele_size = extract_element_size(filename)
 
-# Display both populated windows simultaneously
-plt.show()
+        with open(file_path, "r", encoding="utf-8") as file:
+            data = json.load(file)
+
+        # Detect the model key
+        candidate_keys = [f"mesh_{ele_size}_model", f"{ele_size}_model", f"mesh_{ele_size}"]
+        model_name = next((k for k in candidate_keys if k in data), next(iter(data.keys()), None))
+
+        if model_name is None or "depth" not in data[model_name]:
+            print(f"Warning: Depth data not found in {filename}. Skipping.")
+            continue
+
+        depth_data = data[model_name]["depth"]
+        depth_x = [point[0] for point in depth_data]
+        depth_y = [point[1] for point in depth_data]
+
+        # Plot depth curves
+        ax.plot(
+            depth_x,
+            depth_y,
+            markersize=4.0,
+            marker="o",
+            markeredgecolor="black",
+            markeredgewidth=0.5,
+            linewidth=1.5,
+            linestyle="-",
+            label=rf"${ele_size}\,\mu\mathrm{{m}}$",
+            zorder=3,
+        )
+
+    # Rótulo do eixo X com a informação de r = 0.75 mm e rótulo do eixo Y (sem título principal)
+    ax.set_xlabel(r"Profundidade em $r = 0.75\,\mathrm{mm}$ [$\mathrm{mm}$]")
+    ax.set_ylabel(r"Tensão Residual $\sigma_r$ [$\mathrm{MPa}$]")
+
+    apply_legend_style(ax, title="Tamanho do Elemento")
+
+    fig.tight_layout()
+    fig.savefig(
+        os.path.join(folder_path, "lsp_residual_stress_depth_r075.svg"),
+        format="svg",
+        bbox_inches="tight",
+    )
+
+
+if __name__ == "__main__":
+    target_folder = "C:/Users/arthu/Desktop/arthur/git/LSP-Modeling-and-Calibration/backend/data/"
+    plot_depth_stress_profile(target_folder)

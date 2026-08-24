@@ -22,7 +22,7 @@ plt.rcParams.update(
     }
 )
 
-# 2. Resolução de caminhos
+# 2. Resolução dinâmica dos caminhos
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 data_folder = os.path.join(base_dir, "backend", "data")
 target_file = os.path.join(base_dir, "target_curve.csv")
@@ -40,8 +40,8 @@ if not json_files:
         f"Nenhum arquivo encontrado em {data_folder} com o padrão '{search_pattern}'"
     )
 
-# 3. Construção da figura
-fig, (ax_depth, ax_surf) = plt.subplots(1, 2, figsize=(12.0, 4.8), dpi=300)
+# 3. Construção do gráfico de profundidade
+fig, ax = plt.subplots(figsize=(8.0, 4.5), dpi=300)
 
 # Curva Alvo Experimental (Hole Drilling)
 if os.path.exists(target_file):
@@ -50,13 +50,13 @@ if os.path.exists(target_file):
     exp_stresses = target_df.iloc[:, 1].values.astype(float)
     plot_x_edges = np.insert(exp_depth_ends, 0, 0.0)
 
-    ax_depth.stairs(
+    ax.stairs(
         exp_stresses,
         plot_x_edges,
         baseline=None,
         color="#111111",
         linewidth=2.0,
-        label="Experimental Target (HD)",
+        label="Experimental",
         zorder=5,
     )
 else:
@@ -70,14 +70,15 @@ for file_path in json_files:
         data = json.load(file)
 
     for model_name, model_content in data.items():
-        if "depth" not in model_content or "surface" not in model_content:
+        if "depth" not in model_content:
             continue
 
         depth_data = np.array(model_content["depth"])
-        surface_data = np.array(model_content["surface"])
 
-        # Perfil de profundidade
-        ax_depth.plot(
+        # Prioriza o campo 'legend' se existir; caso contrário, usa a chave do modelo
+        label_name = model_content.get("legend", model_name)
+
+        ax.plot(
             depth_data[:, 0],
             depth_data[:, 1],
             marker="o",
@@ -85,41 +86,19 @@ for file_path in json_files:
             markeredgewidth=0.4,
             markeredgecolor="black",
             linewidth=1.4,
-            label=model_name,
+            label=label_name,
             zorder=3,
         )
 
-        # Perfil de superfície
-        ax_surf.plot(
-            surface_data[:, 0],
-            surface_data[:, 1],
-            marker="s",
-            markersize=3.5,
-            markeredgewidth=0.4,
-            markeredgecolor="black",
-            linewidth=1.4,
-            linestyle="--",
-            label=model_name,
-            zorder=3,
-        )
+# 4. Formatação e ajustes finais
+ax.axhline(0, color="gray", linewidth=0.8, linestyle=":", zorder=1)
+ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.6, zorder=0)
 
-# 4. Formatação dos eixos
-for ax in (ax_depth, ax_surf):
-    ax.axhline(0, color="gray", linewidth=0.8, linestyle=":", zorder=1)
-    ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.6, zorder=0)
-
-# Eixo 1: Profundidade
-ax_depth.set_xlabel("Profundidade $z$ [mm]")
-ax_depth.set_ylabel("Tensão Residual $S_{11}$ [MPa]")
-ax_depth.set_title("Perfil de Tensão em Profundidade")
-ax_depth.legend(frameon=True, edgecolor="none", facecolor="white", framealpha=0.8)
-
-# Eixo 2: Superfície
-ax_surf.set_xlabel("Distância Radial $r$ [mm]")
-ax_surf.set_ylabel("Tensão Residual $S_{11}$ [MPa]")
-ax_surf.set_title("Perfil de Tensão Superficial")
-ax_surf.legend(frameon=True, edgecolor="none", facecolor="white", framealpha=0.8)
+ax.set_xlabel("Profundidade $z$ [mm]")
+ax.set_ylabel("Tensão Residual $S_{11}$ [MPa]")
+ax.set_title("Perfil de Tensão Residual em Profundidade")
+ax.legend(frameon=True, edgecolor="none", facecolor="white", framealpha=0.8)
 
 plt.tight_layout()
-plt.savefig("results/perfis_tensao_residual_lsp.svg", format="svg", bbox_inches="tight")
-plt.show()
+plt.savefig("plot/perfil_tensao_profundidade_lsp.svg", format="svg", bbox_inches="tight")
+# plt.show()

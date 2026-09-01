@@ -1,0 +1,76 @@
+{
+    "mesh_25": {
+        "odbExtractor": {
+            "stepName": "RestPhase",
+            "surfacePointPath": [
+                [
+                    0.0,
+                    null,
+                    0.0
+                ],
+                [
+                    4.0,
+                    null,
+                    0.0
+                ]
+            ],
+            "depthPointPath": [
+                [
+                    0.75,
+                    null,
+                    0.0
+                ],
+                [
+                    0.75,
+                    -0.8,
+                    0.0
+                ]
+            ]
+        },
+        "modelBuilder": {
+            "pulse": {
+                "p0": 1293.5,
+                "pMax": 1293.5,
+                "rMax": 1.25,
+                "r": 2.5,
+                "timeMax": 3.0e-08
+            },
+            "step": {
+                "durationShotPhase": 6e-07,
+                "durationRestPhase": 5e-05,
+                "totalFrames": 20
+            },
+            "mesh": {
+                "interestRegionSize": 0.025,
+                "maxElementSize": 0.2
+            },
+            "geometry": {
+                "lengthFiniteCube": 7.0,
+                "heightFiniteCube": 7.0,
+                "infiniteBorder": 0.5,
+                "lengthInterestRegion": 2.5,
+                "heightInterestRegion": 2.5
+            },
+            "material": {
+                "johnsonCook": {
+                    "a": 347.0,
+                    "b": 615.7,
+                    "n": 0.619,
+                    "m": 0,
+                    "meltingTemp": 0,
+                    "transitionTemp": 0,
+                    "c": 0.025,
+                    "epsilonDotZero": 0.005
+                },
+                "elastic": {
+                    "youngModulus": 71000.0,
+                    "poissonRatio": 0.33
+                },
+                "density": 2.77e-09
+            },
+            "job": {
+                "numCPUs": 6
+            }
+        }
+    }
+}

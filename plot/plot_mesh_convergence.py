@@ -22,7 +22,7 @@ plt.rcParams.update(
 )
 
 
-def apply_legend_style(ax: plt.Axes, title: str = "Tamanho do Elemento") -> None:
+def apply_legend_style(ax: plt.Axes, title: str = "Element Size") -> None:
     """Applies standardized publication-quality styling to the legend."""
     ax.legend(
         title=title,
@@ -95,11 +95,11 @@ def plot_depth_stress_profile(folder_path: str) -> None:
             zorder=3,
         )
 
-    # Rótulo do eixo X com a informação de r = 0.75 mm e rótulo do eixo Y (sem título principal)
-    ax.set_xlabel(r"Profundidade em $r = 0.75\,\mathrm{mm}$ [$\mathrm{mm}$]")
-    ax.set_ylabel(r"Tensão Residual $\sigma_r$ [$\mathrm{MPa}$]")
+    # Axis labels in English
+    ax.set_xlabel(r"Depth at $r = 0.75\,\mathrm{mm}$ [$\mathrm{mm}$]")
+    ax.set_ylabel(r"Residual Stress $\sigma_r$ [$\mathrm{MPa}$]")
 
-    apply_legend_style(ax, title="Tamanho do Elemento")
+    apply_legend_style(ax, title="Element Size")
 
     fig.tight_layout()
     fig.savefig(

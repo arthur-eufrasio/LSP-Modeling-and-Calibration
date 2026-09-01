@@ -58,7 +58,7 @@ ax.errorbar(
     markersize=4.5,
     markeredgecolor="black",
     markeredgewidth=0.5,
-    label="Experimental (Furo Cego)",  #[cite: 6]
+    label="Experimental (Hole Drilling)",  #[cite: 6]
     zorder=5,  #[cite: 6]
 )
 
@@ -67,8 +67,8 @@ ax.axhline(0, color="gray", linewidth=0.8, linestyle=":", zorder=1)  #[cite: 6]
 ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.6, zorder=0)  #[cite: 6]
 
 # Rótulos dos eixos
-ax.set_xlabel(r"Profundidade em $r = 0.75\,\mathrm{mm}$ [mm]")  #[cite: 6]
-ax.set_ylabel(r"Tensão Residual $\sigma_r$ [MPa]")  #[cite: 6]
+ax.set_xlabel(r"Depth at $r = 0.75\,\mathrm{mm}$ [mm]")  #[cite: 6]
+ax.set_ylabel(r"Residual Stress $\sigma_r$ [MPa]")  #[cite: 6]
 
 # Legenda com respiro das bordas
 ax.legend(

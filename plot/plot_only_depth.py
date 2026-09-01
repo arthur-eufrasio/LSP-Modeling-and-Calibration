@@ -69,7 +69,7 @@ if os.path.exists(target_file):
         markersize=4.5,
         markeredgecolor="black",
         markeredgewidth=0.5,
-        label="Experimental (Furo Cego)",  #[cite: 5]
+        label="Experimental (Hole Drilling)",  #[cite: 5]
         zorder=5,
     )
 else:
@@ -106,8 +106,8 @@ ax.axhline(0, color="gray", linewidth=0.8, linestyle=":", zorder=1)
 ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.6, zorder=0)
 
 # Rótulos dos eixos
-ax.set_xlabel(r"Profundidade em $r = 0.75\,\mathrm{mm}$ [mm]")
-ax.set_ylabel(r"Tensão Residual $\sigma_r$ [MPa]")
+ax.set_xlabel(r"Depth at $r = 0.75\,\mathrm{mm}$ [mm]")
+ax.set_ylabel(r"Residual Stress $\sigma_r$ [MPa]")
 
 # Legenda afastada das bordas dos eixos
 ax.legend(
